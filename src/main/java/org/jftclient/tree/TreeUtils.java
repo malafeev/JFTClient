@@ -1,0 +1,115 @@
+package org.jftclient.tree;
+
+import java.io.File;
+import java.util.List;
+
+import org.jftclient.config.ConfigDao;
+import org.jftclient.ssh.Connection;
+
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.scene.control.TreeItem;
+
+/**
+ * @author smalafeev
+ */
+public class TreeUtils {
+
+    public static TreeItem<Node> createRemoteNode(Connection connection, Node path) {
+        return new TreeItem<Node>(path) {
+            private boolean isLeaf;
+            private boolean isFirstTimeChildren = true;
+            private boolean isFirstTimeLeaf = true;
+
+            @Override
+            public ObservableList<TreeItem<Node>> getChildren() {
+                if (isFirstTimeChildren) {
+                    isFirstTimeChildren = false;
+                    super.getChildren().setAll(buildRemoteChildren(connection, this));
+                }
+                return super.getChildren();
+            }
+
+            @Override
+            public boolean isLeaf() {
+                if (isFirstTimeLeaf) {
+                    isFirstTimeLeaf = false;
+                    Node f = getValue();
+                    isLeaf = f.isFile();
+                }
+
+                return isLeaf;
+            }
+        };
+    }
+
+
+    public static TreeItem<Node> createLocalNode(final Node f, ConfigDao config) {
+        return new TreeItem<Node>(f) {
+            private boolean isLeaf;
+            private boolean isFirstTimeChildren = true;
+            private boolean isFirstTimeLeaf = true;
+
+            @Override
+            public ObservableList<TreeItem<Node>> getChildren() {
+                if (isFirstTimeChildren) {
+                    isFirstTimeChildren = false;
+                    super.getChildren().setAll(buildLocalChildren(this, config));
+                }
+                return super.getChildren();
+            }
+
+            @Override
+            public boolean isLeaf() {
+                if (isFirstTimeLeaf) {
+                    isFirstTimeLeaf = false;
+                    isLeaf = getValue().isFile();
+                }
+
+                return isLeaf;
+            }
+        };
+    }
+
+
+    public static ObservableList<TreeItem<Node>> buildLocalChildren(TreeItem<Node> treeItem, ConfigDao config) {
+        Node f = treeItem.getValue();
+        if (f != null && !f.isFile()) {
+            File[] files = new File(f.getPath()).listFiles();
+            if (files != null) {
+                ObservableList<TreeItem<Node>> children = FXCollections.observableArrayList();
+
+                for (File childFile : files) {
+                    if (!config.showHiddenFiles()) {
+                        if (childFile.isHidden()) {
+                            continue;
+                        }
+                    }
+                    children.add(createLocalNode(new Node(childFile), config));
+                }
+
+                return children;
+            }
+        }
+
+        return FXCollections.emptyObservableList();
+    }
+
+    public static ObservableList<TreeItem<Node>> buildRemoteChildren(Connection connection, TreeItem<Node> treeItem) {
+        Node f = treeItem.getValue();
+        if (f != null && !f.isFile()) {
+            List<Node> files = connection.getNodes(f.getPath());
+            if (files != null) {
+                ObservableList<TreeItem<Node>> children = FXCollections.observableArrayList();
+
+                for (Node childFile : files) {
+                    children.add(createRemoteNode(connection, childFile));
+                }
+
+                return children;
+            }
+        }
+
+        return FXCollections.emptyObservableList();
+    }
+}

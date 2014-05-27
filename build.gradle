@@ -1,0 +1,69 @@
+apply plugin: 'java'
+apply plugin: 'application'
+
+ext {
+    userHome = System.getProperty("user.home")
+}
+
+applicationName = applicationName.toLowerCase()
+archivesBaseName = applicationName
+version = "0.1.0"
+mainClassName = "org.jftclient.JFTClient"
+
+jar {
+    baseName = 'jftclient'
+    version = "$version"
+}
+
+targetCompatibility = "1.8"
+sourceCompatibility = "1.8"
+
+repositories {
+    mavenCentral()
+}
+
+
+dependencies {
+    compile 'commons-io:commons-io:2.4'
+    compile 'com.fasterxml.jackson.core:jackson-databind:2.3.3'
+    compile 'ch.qos.logback:logback-classic:1.1.2'
+    compile 'com.jcraft:jsch:0.1.51'
+    compile 'com.google.guava:guava:17.0'
+
+    //Test:
+    testCompile 'org.testng:testng:6.8.8'
+    testCompile 'org.mockito:mockito-all:1.9.5'
+}
+
+test {
+    useTestNG()
+    testLogging {
+        events "started", "passed", "skipped", "failed", "standardOut", "standardError"
+        exceptionFormat "full"
+        showStandardStreams = true
+        minGranularity = 3
+    }
+}
+
+distZip {
+    into("$applicationName-$version") {
+        from 'README'
+        from 'LICENSE'
+    }
+}
+
+task install {
+    description = 'Build app and copy to home'
+    doLast {
+        exec {
+            commandLine "rm";
+            args "-rf", "${userHome}/${applicationName}"
+        }
+        exec {
+            commandLine "cp";
+            args "-rf", "build/install/${applicationName}", "${userHome}"
+        }
+    }
+}
+
+install.dependsOn clean, test, installApp

@@ -1,2 +1,4 @@
 .gradle
-build/
+.idea
+build
+JFTClient.iml
