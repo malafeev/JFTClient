@@ -45,7 +45,6 @@ public class TreeUtils {
         };
     }
 
-
     public static TreeItem<Node> createLocalNode(final Node f, ConfigDao config) {
         return new TreeItem<Node>(f) {
             private boolean isLeaf;
@@ -72,7 +71,6 @@ public class TreeUtils {
             }
         };
     }
-
 
     public static ObservableList<TreeItem<Node>> buildLocalChildren(TreeItem<Node> treeItem, ConfigDao config) {
         Node f = treeItem.getValue();

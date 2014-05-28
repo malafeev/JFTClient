@@ -343,9 +343,9 @@ public class JFTClient extends Application {
                 common.getConfig().setShowHiddenFiles(newVal);
                 common.getConfig().save();
 
-                cellLocal.refresh(common.getConnection());
+                cellLocal.refreshTree(common.getConnection());
                 if (cellRemote != null) {
-                    cellRemote.refresh(common.getConnection());
+                    cellRemote.refreshTree(common.getConnection());
                 }
 
             }

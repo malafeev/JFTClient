@@ -33,15 +33,12 @@ import javafx.stage.Stage;
 public class PathTreeCell extends TreeCell<Node> {
     private static final Logger logger = LoggerFactory.getLogger(PathTreeCell.class);
     private boolean isLocalTree;
-    private ContextMenu dirMenu = new ContextMenu();
+    private ContextMenu contextMenu = new ContextMenu();
     private ConfigDao config;
     private Connection connection;
     private OutputPanel outputPanel;
-    private Stage primaryStage;
-
 
     public PathTreeCell(boolean isLocalTree, Common common, Stage primaryStage) {
-        this.primaryStage = primaryStage;
         this.isLocalTree = isLocalTree;
         this.config = common.getConfig();
         this.connection = common.getConnection();
@@ -51,12 +48,11 @@ public class PathTreeCell extends TreeCell<Node> {
         refreshMenu.setOnAction((ActionEvent event) -> {
 
             getTreeView().getSelectionModel().clearSelection();
-            getTreeItem().getChildren().clear();
 
             if (isLocalTree) {
-                getTreeItem().getChildren().addAll(TreeUtils.buildLocalChildren(getTreeItem(), config));
+                getTreeItem().getChildren().setAll(TreeUtils.buildLocalChildren(getTreeItem(), config));
             } else {
-                getTreeItem().getChildren().addAll(TreeUtils.buildRemoteChildren(connection, getTreeItem()));
+                getTreeItem().getChildren().setAll(TreeUtils.buildRemoteChildren(connection, getTreeItem()));
             }
 
             getTreeView().getSelectionModel().select(getTreeItem());
@@ -93,13 +89,13 @@ public class PathTreeCell extends TreeCell<Node> {
                     }
                 }
 
-                parent.getChildren().clear();
-                parent.getChildren().addAll(TreeUtils.buildLocalChildren(parent, config));
+                parent.getChildren().setAll(TreeUtils.buildLocalChildren(parent, config));
             } else {
                 connection.rm(getItem().getPath());
-                parent.getChildren().clear();
-                parent.getChildren().addAll(TreeUtils.buildRemoteChildren(connection, parent));
+                parent.getChildren().setAll(TreeUtils.buildRemoteChildren(connection, parent));
             }
+
+            getTreeView().getSelectionModel().select(parent);
         });
 
         MenuItem newFolderMenu = new MenuItem("New Folder");
@@ -108,7 +104,6 @@ public class PathTreeCell extends TreeCell<Node> {
             Stage dialog = new Stage();
             dialog.initModality(Modality.WINDOW_MODAL);
             dialog.initOwner(primaryStage);
-
 
             VBox vbox = new VBox();
             vbox.setPadding(new Insets(10));
@@ -153,15 +148,13 @@ public class PathTreeCell extends TreeCell<Node> {
                 if (isLocalTree) {
                     if (folder.mkdirs()) {
                         outputPanel.println(JFTText.getLocalHost(), JFTText.textBlack("mkdir -p " + folderPath));
-                        getTreeItem().getChildren().clear();
-                        getTreeItem().getChildren().addAll(TreeUtils.buildLocalChildren(getTreeItem(), config));
+                        getTreeItem().getChildren().setAll(TreeUtils.buildLocalChildren(getTreeItem(), config));
                     } else {
                         outputPanel.println(JFTText.getLocalHost(), JFTText.textBlack("mkdir -p " + folderPath + " "), JFTText.FAILED);
                     }
                 } else {
                     connection.mkdir(folderPath);
-                    getTreeItem().getChildren().clear();
-                    getTreeItem().getChildren().addAll(TreeUtils.buildRemoteChildren(connection, getTreeItem()));
+                    getTreeItem().getChildren().setAll(TreeUtils.buildRemoteChildren(connection, getTreeItem()));
                 }
 
                 getTreeView().getSelectionModel().select(getTreeItem());
@@ -180,7 +173,7 @@ public class PathTreeCell extends TreeCell<Node> {
             dialog.showAndWait();
         });
 
-        dirMenu.getItems().addAll(refreshMenu, deleteMenu, newFolderMenu);
+        contextMenu.getItems().addAll(refreshMenu, deleteMenu, newFolderMenu);
     }
 
     @Override
@@ -189,7 +182,7 @@ public class PathTreeCell extends TreeCell<Node> {
 
         if (!empty && item != null) {
             if (!getTreeItem().isLeaf()) {
-                setContextMenu(dirMenu);
+                setContextMenu(contextMenu);
             }
 
             setText(item.getName());
@@ -211,16 +204,14 @@ public class PathTreeCell extends TreeCell<Node> {
         return isLocalTree;
     }
 
-    public void refresh(Connection connection) {
+    public void refreshTree(Connection connection) {
         getTreeView().getSelectionModel().clearSelection();
         TreeItem<Node> root = getTreeView().getRoot();
 
-        root.getChildren().clear();
-
         if (isLocalTree) {
-            root.getChildren().addAll(TreeUtils.buildLocalChildren(root, config));
+            root.getChildren().setAll(TreeUtils.buildLocalChildren(root, config));
         } else {
-            root.getChildren().addAll(TreeUtils.buildRemoteChildren(connection, root));
+            root.getChildren().setAll(TreeUtils.buildRemoteChildren(connection, root));
         }
     }
 }

@@ -6,12 +6,7 @@
         </encoder>
     </appender>
 
-
-    <logger name="org.springframework" level="WARN"/>
-    <logger name="org.thymeleaf" level="WARN"/>
-
-
-    <root level="WARN">
+    <root level="INFO">
         <appender-ref ref="console"/>
     </root>
 
