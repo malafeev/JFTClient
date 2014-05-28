@@ -1,6 +1,8 @@
 package org.jftclient.tree;
 
 import java.io.File;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import org.jftclient.config.ConfigDao;
@@ -87,6 +89,12 @@ public class TreeUtils {
                     }
                     children.add(createLocalNode(new Node(childFile), config));
                 }
+                Collections.sort(children, new Comparator<TreeItem<Node>>() {
+                    @Override
+                    public int compare(TreeItem<Node> o1, TreeItem<Node> o2) {
+                        return o1.getValue().getName().compareTo(o2.getValue().getName());
+                    }
+                });
 
                 return children;
             }
