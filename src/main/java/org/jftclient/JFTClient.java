@@ -17,6 +17,8 @@ import org.jftclient.tree.TreeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Strings;
+
 import javafx.application.Application;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -69,9 +71,11 @@ public class JFTClient extends Application {
     private TitledPane remotePane = new TitledPane();
     private Common common = new Common();
     private final ExecutorService executorService = Executors.newCachedThreadPool();
+    private Stage primaryStage;
 
     @Override
     public void start(Stage primaryStage) {
+        this.primaryStage = primaryStage;
         primaryStage.setTitle("JFTClient");
 
         TitledPane localPane = new TitledPane("Local", createLocalTree());
@@ -123,7 +127,7 @@ public class JFTClient extends Application {
         treeView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 
         treeView.setCellFactory(param -> {
-            cellLocal = new PathTreeCell(true, common);
+            cellLocal = new PathTreeCell(true, common, primaryStage);
             setDragDropEvent(cellLocal);
             return cellLocal;
         });
@@ -254,7 +258,7 @@ public class JFTClient extends Application {
         common.getConnection().disconnect();
 
         String host = hostField.getValue();
-        if (host.isEmpty()) {
+        if (Strings.isNullOrEmpty(host)) {
             common.getOutputPanel().printRed("host is empty\n");
             return;
         }
@@ -291,7 +295,7 @@ public class JFTClient extends Application {
         TreeView<Node> treeView = new TreeView<>(root);
 
         treeView.setCellFactory(param -> {
-            cellRemote = new PathTreeCell(false, common);
+            cellRemote = new PathTreeCell(false, common, primaryStage);
             setDragDropEvent(cellRemote);
             return cellRemote;
         });
