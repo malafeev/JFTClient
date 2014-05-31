@@ -157,14 +157,17 @@ public class JFTClient extends Application {
 
         //Target:
         cell.setOnDragOver(event -> {
-            event.acceptTransferModes(TransferMode.COPY);
+            if (event.getGestureSource() != cell) {
+                event.acceptTransferModes(TransferMode.COPY);
+            }
             event.consume();
         });
 
-
         //Target:
         cell.setOnDragEntered(event -> {
-            cell.setStyle("-fx-background-color: green;");
+            if (event.getGestureSource() != cell) {
+                cell.setStyle("-fx-background-color: green;");
+            }
             event.consume();
         });
 
@@ -191,12 +194,19 @@ public class JFTClient extends Application {
                     File src = new File(file.getPath());
                     File dest = new File(targetPath);
 
+                    if (src.getParentFile().equals(dest)) {
+                        common.getOutputPanel().println(JFTText.getLocalHost(), JFTText.textBlack("cp " +
+                                file.getPath() + " " + cell.getItem().getPath() + " "), JFTText.failed());
+                        common.getOutputPanel().println(JFTText.textBlack("Source and destination are the same"));
+                        continue;
+                    }
+
                     if (LocalFileUtil.copy(src, dest)) {
                         common.getOutputPanel().println(JFTText.getLocalHost(), JFTText.textBlack("cp " +
                                 file.getPath() + " " + cell.getItem().getPath()));
                     } else {
                         common.getOutputPanel().println(JFTText.getLocalHost(), JFTText.textBlack("cp " +
-                                file.getPath() + " " + cell.getItem().getPath() + " "), JFTText.FAILED);
+                                file.getPath() + " " + cell.getItem().getPath() + " "), JFTText.failed());
                     }
 
                     cell.getTreeItem().getChildren().clear();

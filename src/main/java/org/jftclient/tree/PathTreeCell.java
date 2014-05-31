@@ -71,7 +71,7 @@ public class PathTreeCell extends TreeCell<Node> {
                     if (!src.delete()) {
                         logger.warn("cannot delete file {}", src.getAbsolutePath());
                         common.getOutputPanel().println(JFTText.getLocalHost(), JFTText.textBlack("rm " +
-                                src.getAbsolutePath() + " "), JFTText.FAILED);
+                                src.getAbsolutePath() + " "), JFTText.failed());
 
                     } else {
                         common.getOutputPanel().println(JFTText.getLocalHost(), JFTText.textBlack("rm " +
@@ -85,7 +85,7 @@ public class PathTreeCell extends TreeCell<Node> {
                     } catch (IOException e) {
                         logger.warn("failed to remove dir", e);
                         common.getOutputPanel().println(JFTText.getLocalHost(), JFTText.textBlack("rm " +
-                                src.getAbsolutePath() + " "), JFTText.FAILED);
+                                src.getAbsolutePath() + " "), JFTText.failed());
                     }
                 }
 
@@ -150,7 +150,7 @@ public class PathTreeCell extends TreeCell<Node> {
                         outputPanel.println(JFTText.getLocalHost(), JFTText.textBlack("mkdir -p " + folderPath));
                         getTreeItem().getChildren().setAll(TreeUtils.buildLocalChildren(getTreeItem(), config));
                     } else {
-                        outputPanel.println(JFTText.getLocalHost(), JFTText.textBlack("mkdir -p " + folderPath + " "), JFTText.FAILED);
+                        outputPanel.println(JFTText.getLocalHost(), JFTText.textBlack("mkdir -p " + folderPath + " "), JFTText.failed());
                     }
                 } else {
                     connection.mkdir(folderPath);

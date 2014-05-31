@@ -7,8 +7,8 @@ import javafx.scene.text.Text;
  * @author smalafeev
  */
 public class JFTText {
-    public static final Text DONE = create("DONE", Color.BLUE);
-    public static final Text FAILED = create("FAILED", Color.RED);
+    private static final String DONE = "DONE";
+    private static final String FAILED = "FAILED";
 
     public static Text getLocalHost() {
         Text text = new Text("[localhost] ");
@@ -40,10 +40,15 @@ public class JFTText {
         return out;
     }
 
-    private static Text create(String text, Color color) {
-        Text out = new Text(text);
-        out.setFill(color);
+    public static Text done() {
+        Text out = new Text(DONE);
+        out.setFill(Color.BLUE);
         return out;
     }
 
+    public static Text failed() {
+        Text out = new Text(FAILED);
+        out.setFill(Color.RED);
+        return out;
+    }
 }

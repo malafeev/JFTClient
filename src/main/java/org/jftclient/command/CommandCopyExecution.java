@@ -48,7 +48,7 @@ public class CommandCopyExecution implements Callable<Boolean> {
             pr = setProcess(new ProcessBuilder(commandCopy.toArray()).start());
         } catch (IOException ex) {
             logger.error("failed commandCopy: {}", commandWithoutPassword, ex);
-            output.add(JFTText.FAILED);
+            output.add(JFTText.failed());
             outputPanel.printlnOutputLater(output);
             return false;
         }
@@ -65,7 +65,7 @@ public class CommandCopyExecution implements Callable<Boolean> {
             }
         } catch (IOException ex) {
             logger.error("failed {}", commandWithoutPassword, ex);
-            output.add(JFTText.FAILED);
+            output.add(JFTText.failed());
             outputPanel.printlnOutputLater(output);
             return false;
         }
@@ -74,9 +74,9 @@ public class CommandCopyExecution implements Callable<Boolean> {
         output.add(JFTText.textBlack(commandWithoutPassword));
         try {
             if (pr.waitFor() != 0) {
-                output.add(JFTText.FAILED);
+                output.add(JFTText.failed());
             } else {
-                output.add(JFTText.DONE);
+                output.add(JFTText.done());
                 res = true;
             }
         } catch (InterruptedException e) {
