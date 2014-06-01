@@ -13,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -22,6 +23,8 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TreeCell;
 import javafx.scene.control.TreeItem;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
@@ -60,42 +63,7 @@ public class PathTreeCell extends TreeCell<Node> {
 
         MenuItem deleteMenu = new MenuItem("Delete");
         deleteMenu.setOnAction((ActionEvent event) -> {
-
-            getTreeView().getSelectionModel().clearSelection();
-
-            TreeItem<Node> parent = getTreeItem().getParent();
-
-            if (isLocalTree) {
-                File src = new File(getItem().getPath());
-                if (src.isFile()) {
-                    if (!src.delete()) {
-                        logger.warn("cannot delete file {}", src.getAbsolutePath());
-                        common.getOutputPanel().println(JFTText.getLocalHost(), JFTText.textBlack("rm " +
-                                src.getAbsolutePath() + " "), JFTText.failed());
-
-                    } else {
-                        common.getOutputPanel().println(JFTText.getLocalHost(), JFTText.textBlack("rm " +
-                                src.getAbsolutePath()));
-                    }
-                } else {
-                    try {
-                        FileUtils.deleteDirectory(src);
-                        common.getOutputPanel().println(JFTText.getLocalHost(), JFTText.textBlack("rm " +
-                                src.getAbsolutePath()));
-                    } catch (IOException e) {
-                        logger.warn("failed to remove dir", e);
-                        common.getOutputPanel().println(JFTText.getLocalHost(), JFTText.textBlack("rm " +
-                                src.getAbsolutePath() + " "), JFTText.failed());
-                    }
-                }
-
-                parent.getChildren().setAll(TreeUtils.buildLocalChildren(parent, config));
-            } else {
-                connection.rm(getItem().getPath());
-                parent.getChildren().setAll(TreeUtils.buildRemoteChildren(connection, parent));
-            }
-
-            getTreeView().getSelectionModel().select(parent);
+            deleteItems();
         });
 
         MenuItem newFolderMenu = new MenuItem("New Folder");
@@ -134,31 +102,16 @@ public class PathTreeCell extends TreeCell<Node> {
             dialog.setX(x);
             dialog.setY(y);
 
-            btnOk.setOnAction(event1 -> {
-                String folderName = folderField.getText().trim();
-                if (folderName.isEmpty()) {
-                    dialog.close();
-                    return;
-                }
-
-                File folder = new File(getItem().getPath(), folderName);
-                String folderPath = folder.getAbsolutePath();
-
-                getTreeView().getSelectionModel().clearSelection();
-                if (isLocalTree) {
-                    if (folder.mkdirs()) {
-                        outputPanel.println(JFTText.getLocalHost(), JFTText.textBlack("mkdir -p " + folderPath));
-                        getTreeItem().getChildren().setAll(TreeUtils.buildLocalChildren(getTreeItem(), config));
-                    } else {
-                        outputPanel.println(JFTText.getLocalHost(), JFTText.textBlack("mkdir -p " + folderPath + " "), JFTText.failed());
+            folderField.setOnKeyPressed(new EventHandler<KeyEvent>() {
+                @Override
+                public void handle(KeyEvent event) {
+                    if (event.getCode() == KeyCode.ENTER) {
+                        createFolder(folderField, dialog);
                     }
-                } else {
-                    connection.mkdir(folderPath);
-                    getTreeItem().getChildren().setAll(TreeUtils.buildRemoteChildren(connection, getTreeItem()));
                 }
-
-                getTreeView().getSelectionModel().select(getTreeItem());
-                dialog.close();
+            });
+            btnOk.setOnAction(event1 -> {
+                createFolder(folderField, dialog);
             });
 
             btnCancel.setOnAction(event1 -> dialog.close());
@@ -174,6 +127,71 @@ public class PathTreeCell extends TreeCell<Node> {
         });
 
         contextMenu.getItems().addAll(refreshMenu, deleteMenu, newFolderMenu);
+    }
+
+    private void createFolder(TextField folderField, Stage dialog) {
+        String folderName = folderField.getText().trim();
+        if (folderName.isEmpty()) {
+            dialog.close();
+            return;
+        }
+
+        File folder = new File(getItem().getPath(), folderName);
+        String folderPath = folder.getAbsolutePath();
+
+        getTreeView().getSelectionModel().clearSelection();
+        if (isLocalTree) {
+            if (folder.mkdirs()) {
+                outputPanel.println(JFTText.getLocalHost(), JFTText.textBlack("mkdir -p " + folderPath));
+                getTreeItem().getChildren().setAll(TreeUtils.buildLocalChildren(getTreeItem(), config));
+            } else {
+                outputPanel.println(JFTText.getLocalHost(), JFTText.textBlack("mkdir -p " + folderPath + " "), JFTText.failed());
+            }
+        } else {
+            connection.mkdir(folderPath);
+            getTreeItem().getChildren().setAll(TreeUtils.buildRemoteChildren(connection, getTreeItem()));
+        }
+
+        getTreeView().getSelectionModel().select(getTreeItem());
+        dialog.close();
+    }
+
+    private void deleteItems() {
+        getTreeView().getSelectionModel().clearSelection();
+
+        TreeItem<Node> parent = getTreeItem().getParent();
+
+        if (isLocalTree) {
+            File src = new File(getItem().getPath());
+            if (src.isFile()) {
+                if (!src.delete()) {
+                    logger.warn("cannot delete file {}", src.getAbsolutePath());
+                    outputPanel.println(JFTText.getLocalHost(), JFTText.textBlack("rm " +
+                            src.getAbsolutePath() + " "), JFTText.failed());
+
+                } else {
+                    outputPanel.println(JFTText.getLocalHost(), JFTText.textBlack("rm " +
+                            src.getAbsolutePath()));
+                }
+            } else {
+                try {
+                    FileUtils.deleteDirectory(src);
+                    outputPanel.println(JFTText.getLocalHost(), JFTText.textBlack("rm " +
+                            src.getAbsolutePath()));
+                } catch (IOException e) {
+                    logger.warn("failed to remove dir", e);
+                    outputPanel.println(JFTText.getLocalHost(), JFTText.textBlack("rm " +
+                            src.getAbsolutePath() + " "), JFTText.failed());
+                }
+            }
+
+            parent.getChildren().setAll(TreeUtils.buildLocalChildren(parent, config));
+        } else {
+            connection.rm(getItem().getPath());
+            parent.getChildren().setAll(TreeUtils.buildRemoteChildren(connection, parent));
+        }
+
+        getTreeView().getSelectionModel().select(parent);
     }
 
     @Override
