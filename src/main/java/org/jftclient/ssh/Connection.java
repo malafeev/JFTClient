@@ -105,6 +105,10 @@ public class Connection {
         sendCommand("rm -rf " + path);
     }
 
+    public synchronized void mv(String src, String dest) {
+        sendCommand("mv -f " + src + " " + dest);
+    }
+
     /**
      * create new directory
      *

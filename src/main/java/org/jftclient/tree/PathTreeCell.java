@@ -23,6 +23,8 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TreeCell;
 import javafx.scene.control.TreeItem;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.HBox;
@@ -36,10 +38,15 @@ import javafx.stage.Stage;
 public class PathTreeCell extends TreeCell<Node> {
     private static final Logger logger = LoggerFactory.getLogger(PathTreeCell.class);
     private boolean isLocalTree;
-    private ContextMenu contextMenu = new ContextMenu();
+    private ContextMenu contextFileMenu = new ContextMenu();
+    private ContextMenu contextFolderMenu = new ContextMenu();
     private ConfigDao config;
     private Connection connection;
     private OutputPanel outputPanel;
+
+    public static Image folderCollapseImage = new Image(ClassLoader.getSystemResourceAsStream("folder.png"));
+    public static Image folderExpandImage = new Image(ClassLoader.getSystemResourceAsStream("folder-open.png"));
+    public static Image fileImage = new Image(ClassLoader.getSystemResourceAsStream("text-x-generic.png"));
 
     public PathTreeCell(boolean isLocalTree, Common common, Stage primaryStage) {
         this.isLocalTree = isLocalTree;
@@ -49,16 +56,7 @@ public class PathTreeCell extends TreeCell<Node> {
 
         MenuItem refreshMenu = new MenuItem("Refresh");
         refreshMenu.setOnAction((ActionEvent event) -> {
-
-            getTreeView().getSelectionModel().clearSelection();
-
-            if (isLocalTree) {
-                getTreeItem().getChildren().setAll(TreeUtils.buildLocalChildren(getTreeItem(), config));
-            } else {
-                getTreeItem().getChildren().setAll(TreeUtils.buildRemoteChildren(connection, getTreeItem()));
-            }
-
-            getTreeView().getSelectionModel().select(getTreeItem());
+            refreshItem();
         });
 
         MenuItem deleteMenu = new MenuItem("Delete");
@@ -68,65 +66,172 @@ public class PathTreeCell extends TreeCell<Node> {
 
         MenuItem newFolderMenu = new MenuItem("New Folder");
         newFolderMenu.setOnAction((ActionEvent event) -> {
-
-            Stage dialog = new Stage();
-            dialog.initModality(Modality.WINDOW_MODAL);
-            dialog.initOwner(primaryStage);
-
-            VBox vbox = new VBox();
-            vbox.setPadding(new Insets(10));
-            vbox.setSpacing(8);
-            Button btnOk = new Button("OK");
-            Button btnCancel = new Button("Cancel");
-            HBox hbox = new HBox();
-            hbox.setPadding(new Insets(10, 10, 10, 10));
-            hbox.setSpacing(10);
-            hbox.setAlignment(Pos.CENTER);
-            btnOk.setPrefWidth(80d);
-            btnCancel.setPrefWidth(80d);
-            hbox.getChildren().addAll(btnOk, btnCancel);
-
-            TextField folderField = new TextField();
-
-            vbox.getChildren().addAll(new Text("Please enter name:"), folderField, hbox);
-            Scene myDialogScene = new Scene(vbox);
-
-            dialog.setScene(myDialogScene);
-            dialog.setHeight(150d);
-            dialog.setWidth(300d);
-            dialog.setTitle("New Folder");
-
-            double x = primaryStage.getX() + primaryStage.getWidth() / 2. - dialog.getWidth() / 2;
-            double y = primaryStage.getY() + primaryStage.getHeight() / 2. - dialog.getHeight() / 2;
-
-            dialog.setX(x);
-            dialog.setY(y);
-
-            folderField.setOnKeyPressed(new EventHandler<KeyEvent>() {
-                @Override
-                public void handle(KeyEvent event) {
-                    if (event.getCode() == KeyCode.ENTER) {
-                        createFolder(folderField, dialog);
-                    }
-                }
-            });
-            btnOk.setOnAction(event1 -> {
-                createFolder(folderField, dialog);
-            });
-
-            btnCancel.setOnAction(event1 -> dialog.close());
-
-            String os = System.getProperty("os.name").toLowerCase();
-            if (os.indexOf("mac") >= 0) {
-                //TODO: strange hack on OS X
-                dialog.show();
-                dialog.hide();
-            }
-
-            dialog.showAndWait();
+            createNewFolderDialog(primaryStage);
         });
 
-        contextMenu.getItems().addAll(refreshMenu, deleteMenu, newFolderMenu);
+        MenuItem renameMenu = new MenuItem("Rename");
+        renameMenu.setOnAction((ActionEvent event) -> {
+            createRenameDialog(primaryStage);
+        });
+
+        contextFolderMenu.getItems().addAll(refreshMenu, deleteMenu, renameMenu, newFolderMenu);
+        contextFileMenu.getItems().addAll(refreshMenu, deleteMenu, renameMenu);
+
+
+    }
+
+    private void createRenameDialog(Stage primaryStage) {
+        Stage dialog = new Stage();
+        dialog.initModality(Modality.WINDOW_MODAL);
+        dialog.initOwner(primaryStage);
+
+        VBox vbox = new VBox();
+        vbox.setPadding(new Insets(10));
+        vbox.setSpacing(8);
+        Button btnOk = new Button("OK");
+        Button btnCancel = new Button("Cancel");
+        HBox hbox = new HBox();
+        hbox.setPadding(new Insets(10, 10, 10, 10));
+        hbox.setSpacing(10);
+        hbox.setAlignment(Pos.CENTER);
+        btnOk.setPrefWidth(80d);
+        btnCancel.setPrefWidth(80d);
+        hbox.getChildren().addAll(btnOk, btnCancel);
+
+        TextField itemField = new TextField(getTreeItem().getValue().getName());
+
+        vbox.getChildren().addAll(new Text("Please enter a new name:"), itemField, hbox);
+        Scene myDialogScene = new Scene(vbox);
+
+        dialog.setScene(myDialogScene);
+        dialog.setHeight(150d);
+        dialog.setWidth(300d);
+        dialog.setTitle("Rename");
+
+        double x = primaryStage.getX() + primaryStage.getWidth() / 2. - dialog.getWidth() / 2;
+        double y = primaryStage.getY() + primaryStage.getHeight() / 2. - dialog.getHeight() / 2;
+
+        dialog.setX(x);
+        dialog.setY(y);
+
+        itemField.setOnKeyPressed(new EventHandler<KeyEvent>() {
+            @Override
+            public void handle(KeyEvent event) {
+                if (event.getCode() == KeyCode.ENTER) {
+                    renameItem(itemField.getText().trim(), dialog);
+                }
+            }
+        });
+        btnOk.setOnAction(event1 -> {
+            renameItem(itemField.getText().trim(), dialog);
+        });
+
+        btnCancel.setOnAction(event1 -> dialog.close());
+
+        String os = System.getProperty("os.name").toLowerCase();
+        if (os.contains("mac")) {
+            //TODO: strange hack on OS X
+            dialog.show();
+            dialog.toFront();
+        } else {
+            dialog.showAndWait();
+        }
+    }
+
+    private void createNewFolderDialog(Stage primaryStage) {
+        Stage dialog = new Stage();
+        dialog.initModality(Modality.WINDOW_MODAL);
+        dialog.initOwner(primaryStage);
+
+        VBox vbox = new VBox();
+        vbox.setPadding(new Insets(10));
+        vbox.setSpacing(8);
+        Button btnOk = new Button("OK");
+        Button btnCancel = new Button("Cancel");
+        HBox hbox = new HBox();
+        hbox.setPadding(new Insets(10, 10, 10, 10));
+        hbox.setSpacing(10);
+        hbox.setAlignment(Pos.CENTER);
+        btnOk.setPrefWidth(80d);
+        btnCancel.setPrefWidth(80d);
+        hbox.getChildren().addAll(btnOk, btnCancel);
+
+        TextField folderField = new TextField();
+
+        vbox.getChildren().addAll(new Text("Please enter name:"), folderField, hbox);
+        Scene myDialogScene = new Scene(vbox);
+
+        dialog.setScene(myDialogScene);
+        dialog.setHeight(150d);
+        dialog.setWidth(300d);
+        dialog.setTitle("New Folder");
+
+        double x = primaryStage.getX() + primaryStage.getWidth() / 2. - dialog.getWidth() / 2;
+        double y = primaryStage.getY() + primaryStage.getHeight() / 2. - dialog.getHeight() / 2;
+
+        dialog.setX(x);
+        dialog.setY(y);
+
+        folderField.setOnKeyPressed(new EventHandler<KeyEvent>() {
+            @Override
+            public void handle(KeyEvent event) {
+                if (event.getCode() == KeyCode.ENTER) {
+                    createFolder(folderField, dialog);
+                }
+            }
+        });
+        btnOk.setOnAction(event1 -> {
+            createFolder(folderField, dialog);
+        });
+
+        btnCancel.setOnAction(event1 -> dialog.close());
+
+        String os = System.getProperty("os.name").toLowerCase();
+        if (os.contains("mac")) {
+            //TODO: strange hack on OS X
+            dialog.show();
+            dialog.toFront();
+        } else {
+            dialog.showAndWait();
+        }
+    }
+
+    private void renameItem(String newName, Stage dialog) {
+        if (newName.isEmpty()) {
+            dialog.close();
+            return;
+        }
+
+        getTreeView().getSelectionModel().clearSelection();
+
+        TreeItem<Node> parent = getTreeItem().getParent();
+
+        File newFile = new File(getTreeItem().getParent().getValue().getPath(), newName);
+        File oldFile = new File(getItem().getPath());
+
+        if (isLocalTree()) {
+            if (!oldFile.renameTo(newFile)) {
+                outputPanel.println(JFTText.getLocalHost(), JFTText.textBlack("failed rename  " + oldFile.getAbsolutePath() + " to " +
+                        newFile.getAbsolutePath()), JFTText.failed());
+                dialog.close();
+                return;
+            }
+        } else {
+            connection.mv(oldFile.getAbsolutePath(), newFile.getAbsolutePath());
+        }
+
+        Node node = getItem();
+        node.setName(newName);
+        super.startEdit();
+        super.commitEdit(node);
+
+        dialog.close();
+
+        if (isLocalTree()) {
+            parent.getChildren().setAll(TreeUtils.buildLocalChildren(parent, config));
+        } else {
+            parent.getChildren().setAll(TreeUtils.buildRemoteChildren(connection, parent));
+        }
     }
 
     private void createFolder(TextField folderField, Stage dialog) {
@@ -199,12 +304,22 @@ public class PathTreeCell extends TreeCell<Node> {
         super.updateItem(item, empty);
 
         if (!empty && item != null) {
-            if (!getTreeItem().isLeaf()) {
-                setContextMenu(contextMenu);
+            if (getTreeItem().getValue().isFile()) {
+                setContextMenu(contextFileMenu);
+            } else {
+                setContextMenu(contextFolderMenu);
             }
 
             setText(item.getName());
-            setGraphic(getTreeItem().getGraphic());
+            if (item.isFile()) {
+                setGraphic(new ImageView(fileImage));
+            } else {
+                if (getTreeItem().isExpanded()) {
+                    setGraphic(new ImageView(folderExpandImage));
+                } else {
+                    setGraphic(new ImageView(folderCollapseImage));
+                }
+            }
 
             if (item.getLinkDest() != null) {
                 setTextFill(Color.BLUE);
@@ -231,6 +346,18 @@ public class PathTreeCell extends TreeCell<Node> {
         } else {
             root.getChildren().setAll(TreeUtils.buildRemoteChildren(connection, root));
         }
+    }
+
+    private void refreshItem() {
+        getTreeView().getSelectionModel().clearSelection();
+
+        if (isLocalTree) {
+            getTreeItem().getChildren().setAll(TreeUtils.buildLocalChildren(getTreeItem(), config));
+        } else {
+            getTreeItem().getChildren().setAll(TreeUtils.buildRemoteChildren(connection, getTreeItem()));
+        }
+
+        getTreeView().getSelectionModel().select(getTreeItem());
     }
 }
 

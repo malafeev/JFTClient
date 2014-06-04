@@ -19,9 +19,7 @@ public class TreeUtils {
 
     public static TreeItem<Node> createRemoteNode(Connection connection, Node path) {
         return new TreeItem<Node>(path) {
-            private boolean isLeaf;
             private boolean isFirstTimeChildren = true;
-            private boolean isFirstTimeLeaf = true;
 
             @Override
             public ObservableList<TreeItem<Node>> getChildren() {
@@ -34,22 +32,14 @@ public class TreeUtils {
 
             @Override
             public boolean isLeaf() {
-                if (isFirstTimeLeaf) {
-                    isFirstTimeLeaf = false;
-                    Node f = getValue();
-                    isLeaf = f.isFile();
-                }
-
-                return isLeaf;
+                return getValue().isFile();
             }
         };
     }
 
     public static TreeItem<Node> createLocalNode(final Node f, ConfigDao config) {
         return new TreeItem<Node>(f) {
-            private boolean isLeaf;
             private boolean isFirstTimeChildren = true;
-            private boolean isFirstTimeLeaf = true;
 
             @Override
             public ObservableList<TreeItem<Node>> getChildren() {
@@ -62,12 +52,7 @@ public class TreeUtils {
 
             @Override
             public boolean isLeaf() {
-                if (isFirstTimeLeaf) {
-                    isFirstTimeLeaf = false;
-                    isLeaf = getValue().isFile();
-                }
-
-                return isLeaf;
+                return getValue().isFile();
             }
         };
     }
