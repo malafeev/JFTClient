@@ -37,16 +37,16 @@ import javafx.stage.Stage;
 
 public class PathTreeCell extends TreeCell<Node> {
     private static final Logger logger = LoggerFactory.getLogger(PathTreeCell.class);
+    private static Image folderCollapseImage = new Image(ClassLoader.getSystemResourceAsStream("folder.png"));
+    private static Image folderExpandImage = new Image(ClassLoader.getSystemResourceAsStream("folder-open.png"));
+    private static Image fileImage = new Image(ClassLoader.getSystemResourceAsStream("file.png"));
+
     private boolean isLocalTree;
     private ContextMenu contextFileMenu = new ContextMenu();
     private ContextMenu contextFolderMenu = new ContextMenu();
     private ConfigDao config;
     private Connection connection;
     private OutputPanel outputPanel;
-
-    public static Image folderCollapseImage = new Image(ClassLoader.getSystemResourceAsStream("folder.png"));
-    public static Image folderExpandImage = new Image(ClassLoader.getSystemResourceAsStream("folder-open.png"));
-    public static Image fileImage = new Image(ClassLoader.getSystemResourceAsStream("text-x-generic.png"));
 
     public PathTreeCell(boolean isLocalTree, Common common, Stage primaryStage) {
         this.isLocalTree = isLocalTree;
