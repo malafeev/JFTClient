@@ -17,8 +17,8 @@ import javafx.scene.control.TreeItem;
  */
 public class TreeUtils {
 
-    public static TreeItem<Node> createRemoteNode(Connection connection, Node path) {
-        return new TreeItem<Node>(path) {
+    public static TreeItem<Node> createRemoteNode(Connection connection, Node node) {
+        return new TreeItem<Node>(node) {
             private boolean isFirstTimeChildren = true;
 
             @Override
@@ -37,8 +37,8 @@ public class TreeUtils {
         };
     }
 
-    public static TreeItem<Node> createLocalNode(final Node f, ConfigDao config) {
-        return new TreeItem<Node>(f) {
+    public static TreeItem<Node> createLocalNode(final Node node, ConfigDao config) {
+        return new TreeItem<Node>(node) {
             private boolean isFirstTimeChildren = true;
 
             @Override

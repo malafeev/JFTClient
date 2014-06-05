@@ -37,9 +37,9 @@ import javafx.stage.Stage;
 
 public class PathTreeCell extends TreeCell<Node> {
     private static final Logger logger = LoggerFactory.getLogger(PathTreeCell.class);
-    private static Image folderCollapseImage = new Image(ClassLoader.getSystemResourceAsStream("folder.png"));
-    private static Image folderExpandImage = new Image(ClassLoader.getSystemResourceAsStream("folder-open.png"));
-    private static Image fileImage = new Image(ClassLoader.getSystemResourceAsStream("file.png"));
+    private static final Image FOLDER_COLLAPSE_IMAGE = new Image(ClassLoader.getSystemResourceAsStream("folder.png"));
+    private static final Image FOLDER_EXPAND_IMAGE = new Image(ClassLoader.getSystemResourceAsStream("folder-open.png"));
+    private static final Image FILE_IMAGE = new Image(ClassLoader.getSystemResourceAsStream("file.png"));
 
     private boolean isLocalTree;
     private ContextMenu contextFileMenu = new ContextMenu();
@@ -47,6 +47,7 @@ public class PathTreeCell extends TreeCell<Node> {
     private ConfigDao config;
     private Connection connection;
     private OutputPanel outputPanel;
+    private Image currentImage;
 
     public PathTreeCell(boolean isLocalTree, Common common, Stage primaryStage) {
         this.isLocalTree = isLocalTree;
@@ -76,8 +77,6 @@ public class PathTreeCell extends TreeCell<Node> {
 
         contextFolderMenu.getItems().addAll(refreshMenu, deleteMenu, renameMenu, newFolderMenu);
         contextFileMenu.getItems().addAll(refreshMenu, deleteMenu, renameMenu);
-
-
     }
 
     private void createRenameDialog(Stage primaryStage) {
@@ -312,14 +311,17 @@ public class PathTreeCell extends TreeCell<Node> {
 
             setText(item.getName());
             if (item.isFile()) {
-                setGraphic(new ImageView(fileImage));
+                currentImage = FILE_IMAGE;
             } else {
                 if (getTreeItem().isExpanded()) {
-                    setGraphic(new ImageView(folderExpandImage));
+                    currentImage = FOLDER_EXPAND_IMAGE;
                 } else {
-                    setGraphic(new ImageView(folderCollapseImage));
+                    currentImage = FOLDER_COLLAPSE_IMAGE;
                 }
             }
+
+            setGraphic(new ImageView(currentImage));
+            //setGraphic(getTreeItem().getGraphic());
 
             if (item.getLinkDest() != null) {
                 setTextFill(Color.BLUE);
@@ -358,6 +360,10 @@ public class PathTreeCell extends TreeCell<Node> {
         }
 
         getTreeView().getSelectionModel().select(getTreeItem());
+    }
+
+    public Image getCurrentImage() {
+        return currentImage;
     }
 }
 

@@ -1,6 +1,8 @@
 package org.jftclient;
 
+import java.awt.AWTException;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -41,6 +43,7 @@ import javafx.scene.control.TitledPane;
 import javafx.scene.control.ToolBar;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
+import javafx.scene.image.Image;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.DataFormat;
 import javafx.scene.input.Dragboard;
@@ -74,7 +77,7 @@ public class JFTClient extends Application {
     private Stage primaryStage;
 
     @Override
-    public void start(Stage primaryStage) {
+    public void start(Stage primaryStage) throws IOException, AWTException {
         this.primaryStage = primaryStage;
         primaryStage.setTitle("JFTClient");
 
@@ -111,6 +114,7 @@ public class JFTClient extends Application {
 
         Scene scene = new Scene(borderPane, 950, 700, Color.WHITE);
         primaryStage.setScene(scene);
+        primaryStage.getIcons().add(new Image("java.png"));
         primaryStage.show();
     }
 
@@ -140,6 +144,7 @@ public class JFTClient extends Application {
         //Source:
         cell.setOnDragDetected(event -> {
             Dragboard db = cell.startDragAndDrop(TransferMode.ANY);
+            db.setDragView(cell.getCurrentImage());
 
             ClipboardContent content = new ClipboardContent();
 
