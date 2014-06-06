@@ -28,12 +28,12 @@ public class CommandCopyExecution implements Callable<Boolean> {
     private Process process;
     private OutputPanel outputPanel;
 
-    public CommandCopyExecution(CommandCopy commandCopy, Common common) {
+    public CommandCopyExecution(CommandCopy commandCopy) {
         this.commandCopy = commandCopy;
-        this.outputPanel = common.getOutputPanel();
+        this.outputPanel = Common.getInstance().getOutputPanel();
 
         commandWithoutPassword = this.commandCopy.toString().replaceFirst("sshpass -p "
-                + common.getConnection().getPassword() + " ", "").replaceFirst("-e ssh -q -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no ", "");
+                + Common.getInstance().getConnection().getPassword() + " ", "").replaceFirst("-e ssh -q -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no ", "");
     }
 
     @Override

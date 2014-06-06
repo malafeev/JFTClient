@@ -1,8 +1,16 @@
 ## JFTClient
 
-
 JavaFX based ssh client. 
 
+## Key Features:
+
+- copy files/folders by drag and drop
+- rename, delete files/folders
+- create new folders   
+
+## Screenshots
+
+![Alt text](/screenshots/screenshot.png?raw=true)
 
 ## Building from Source
 
@@ -19,7 +27,7 @@ JavaFX based ssh client.
 
 ### Installation
 
-In the directory that contains the build.gradle run
+In the directory that contains build.gradle run
 
      gradle install
      
@@ -28,9 +36,13 @@ It will build, test and install application to *~/jftclient* folder.
 
 ### To run
 
-Start JFTClient: 
+If it was installed then start JFTClient: 
 
     ~/jftclient/bin/jftclient
+
+Otherwise in the directory that contains build.gradle run:
+ 
+    gradle run 
 
 ## License 
 GNU GPLv3.

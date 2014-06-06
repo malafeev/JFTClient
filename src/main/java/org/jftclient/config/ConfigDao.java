@@ -2,7 +2,8 @@ package org.jftclient.config;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,10 +16,10 @@ import com.google.common.io.Files;
  * @author smalafeev
  */
 public class ConfigDao {
+    private static final Logger logger = LoggerFactory.getLogger(ConfigDao.class);
     private Config config;
     private ObjectMapper mapper = new ObjectMapper();
     private File configFile;
-    private static final Logger logger = LoggerFactory.getLogger(ConfigDao.class);
 
     public ConfigDao() {
         configFile = new File(System.getProperty("user.home") + "/.jftclient/jftclient.json");
@@ -49,40 +50,36 @@ public class ConfigDao {
         }
     }
 
-    public synchronized Set<String> getHostNames() {
-        return config.getHostnames();
+    public synchronized Host findHostByName(String hostname) {
+        for (Host host : config.getHosts()) {
+            if (host.getHostname().equals(hostname)) {
+                return host;
+            }
+        }
+        return null;
     }
 
-    /**
-     * add host name if not added already
-     *
-     * @param hostname
-     * @return true if hostname was added
-     */
-    public synchronized boolean addHostName(String hostname) {
+    public synchronized List<String> getHostNames() {
+        List<String> hostnames = new ArrayList<>();
+        for (Host host : config.getHosts()) {
+            hostnames.add(host.getHostname());
+        }
+        return hostnames;
+    }
+
+    public synchronized void addHost(String username, String hostname, String password) {
         if (Strings.isNullOrEmpty(hostname)) {
-            return false;
+            return;
         }
-        return config.addHostname(hostname);
-    }
-
-    /**
-     * get user name
-     *
-     * @return user name if saved before or system user name
-     */
-    public synchronized String getUserName() {
-        if (Strings.isNullOrEmpty(config.getUser())) {
-            config.setUser(System.getProperty("user.name"));
+        Host host = findHostByName(hostname);
+        if (host == null) {
+            host = new Host();
+            host.setHostname(hostname);
         }
-        return config.getUser();
-    }
+        host.setUsername(username);
 
-    public synchronized void setUserName(String username) {
-        if (!Strings.isNullOrEmpty(username)) {
-            config.setUser(username);
-        }
-
+        host.setPassword(password);
+        config.getHosts().add(host);
     }
 
     public synchronized boolean showHiddenFiles() {
@@ -91,6 +88,22 @@ public class ConfigDao {
 
     public synchronized void setShowHiddenFiles(boolean showHiddenFiles) {
         config.setShowHiddenFiles(showHiddenFiles);
+    }
+
+    public synchronized boolean isSavePasswords() {
+        return config.isSavePasswords();
+    }
+
+    public synchronized void setSavePasswords(boolean savePasswords) {
+        config.setSavePasswords(savePasswords);
+    }
+
+    public synchronized Config getConfig() {
+        return config;
+    }
+
+    public synchronized void setConfig(Config config) {
+        this.config = config;
     }
 }
 

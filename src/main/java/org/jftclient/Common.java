@@ -4,18 +4,24 @@ import org.jftclient.config.ConfigDao;
 import org.jftclient.ssh.Connection;
 
 /**
+ * Singleton
+ *
  * @author smalafeev
  */
 public class Common {
+    private static final Common instance = new Common();
     private final ConfigDao config;
     private final OutputPanel outputPanel;
     private final Connection connection;
 
-    public Common() {
+    private Common() {
         config = new ConfigDao();
         outputPanel = new OutputPanel();
-        connection = new Connection(config, outputPanel);
+        connection = new Connection();
+    }
 
+    public static Common getInstance() {
+        return instance;
     }
 
     public ConfigDao getConfig() {

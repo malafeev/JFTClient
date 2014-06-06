@@ -13,9 +13,8 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.jftclient.Common;
 import org.jftclient.JFTText;
-import org.jftclient.OutputPanel;
-import org.jftclient.config.ConfigDao;
 import org.jftclient.tree.Node;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,16 +38,9 @@ public class Connection {
     private static final int timeout = 5000;
     private Session session;
     private ChannelSftp sftpChannel;
-    private final ConfigDao config;
     private String remoteHost;
     private String user;
     private String password;
-    private final OutputPanel outputPanel;
-
-    public Connection(ConfigDao config, OutputPanel outputPanel) {
-        this.config = config;
-        this.outputPanel = outputPanel;
-    }
 
     public synchronized void processSymLink(Node node) {
         try {
@@ -163,7 +155,7 @@ public class Connection {
             logger.error("failed to send command: {}", command, e);
         }
 
-        outputPanel.printlnOutputLater(output);
+        Common.getInstance().getOutputPanel().printlnOutputLater(output);
     }
 
     private synchronized List<ChannelSftp.LsEntry> getFiles(String path) {
@@ -173,7 +165,7 @@ public class Connection {
             return files;
         }
 
-        final boolean showHiddenFiles = config.showHiddenFiles();
+        final boolean showHiddenFiles = Common.getInstance().getConfig().showHiddenFiles();
 
         try {
             sftpChannel.ls(path, new ChannelSftp.LsEntrySelector() {

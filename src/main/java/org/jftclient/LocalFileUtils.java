@@ -10,12 +10,19 @@ import org.slf4j.LoggerFactory;
 /**
  * @author smalafeev
  */
-public class LocalFileUtil {
-    private static final Logger logger = LoggerFactory.getLogger(LocalFileUtil.class);
+public class LocalFileUtils {
+    private static final Logger logger = LoggerFactory.getLogger(LocalFileUtils.class);
 
-
+    /**
+     * Copy file to directory<br/>
+     * Copy file to file<br/>
+     * Copy directory to directory
+     *
+     * @param src  source
+     * @param dest destination
+     * @return <code>true</code> if copied otherwise <code>false</code>
+     */
     public static boolean copy(File src, File dest) {
-
         try {
             if (dest.isDirectory()) {
                 if (src.isFile()) {
@@ -30,15 +37,11 @@ public class LocalFileUtil {
                     logger.warn("cannot copy dir to file");
                     return false;
                 }
-
             }
-
         } catch (IOException e) {
             logger.warn("failed to copy", e);
             return false;
         }
         return true;
-
     }
-
 }

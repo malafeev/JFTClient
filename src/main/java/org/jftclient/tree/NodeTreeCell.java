@@ -7,7 +7,6 @@ import org.apache.commons.io.FileUtils;
 import org.jftclient.Common;
 import org.jftclient.JFTText;
 import org.jftclient.OutputPanel;
-import org.jftclient.config.ConfigDao;
 import org.jftclient.ssh.Connection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,8 +34,8 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 
-public class PathTreeCell extends TreeCell<Node> {
-    private static final Logger logger = LoggerFactory.getLogger(PathTreeCell.class);
+public class NodeTreeCell extends TreeCell<Node> {
+    private static final Logger logger = LoggerFactory.getLogger(NodeTreeCell.class);
     private static final Image FOLDER_COLLAPSE_IMAGE = new Image(ClassLoader.getSystemResourceAsStream("folder.png"));
     private static final Image FOLDER_EXPAND_IMAGE = new Image(ClassLoader.getSystemResourceAsStream("folder-open.png"));
     private static final Image FILE_IMAGE = new Image(ClassLoader.getSystemResourceAsStream("file.png"));
@@ -44,16 +43,14 @@ public class PathTreeCell extends TreeCell<Node> {
     private boolean isLocalTree;
     private ContextMenu contextFileMenu = new ContextMenu();
     private ContextMenu contextFolderMenu = new ContextMenu();
-    private ConfigDao config;
     private Connection connection;
     private OutputPanel outputPanel;
     private Image currentImage;
 
-    public PathTreeCell(boolean isLocalTree, Common common, Stage primaryStage) {
+    public NodeTreeCell(boolean isLocalTree, Stage primaryStage) {
         this.isLocalTree = isLocalTree;
-        this.config = common.getConfig();
-        this.connection = common.getConnection();
-        this.outputPanel = common.getOutputPanel();
+        this.connection = Common.getInstance().getConnection();
+        this.outputPanel = Common.getInstance().getOutputPanel();
 
         MenuItem refreshMenu = new MenuItem("Refresh");
         refreshMenu.setOnAction((ActionEvent event) -> {
@@ -171,12 +168,9 @@ public class PathTreeCell extends TreeCell<Node> {
         dialog.setX(x);
         dialog.setY(y);
 
-        folderField.setOnKeyPressed(new EventHandler<KeyEvent>() {
-            @Override
-            public void handle(KeyEvent event) {
-                if (event.getCode() == KeyCode.ENTER) {
-                    createFolder(folderField, dialog);
-                }
+        folderField.setOnKeyPressed(event -> {
+            if (event.getCode() == KeyCode.ENTER) {
+                createFolder(folderField, dialog);
             }
         });
         btnOk.setOnAction(event1 -> {
@@ -227,7 +221,7 @@ public class PathTreeCell extends TreeCell<Node> {
         dialog.close();
 
         if (isLocalTree()) {
-            parent.getChildren().setAll(TreeUtils.buildLocalChildren(parent, config));
+            parent.getChildren().setAll(TreeUtils.buildLocalChildren(parent));
         } else {
             parent.getChildren().setAll(TreeUtils.buildRemoteChildren(connection, parent));
         }
@@ -247,7 +241,7 @@ public class PathTreeCell extends TreeCell<Node> {
         if (isLocalTree) {
             if (folder.mkdirs()) {
                 outputPanel.println(JFTText.getLocalHost(), JFTText.textBlack("mkdir -p " + folderPath));
-                getTreeItem().getChildren().setAll(TreeUtils.buildLocalChildren(getTreeItem(), config));
+                getTreeItem().getChildren().setAll(TreeUtils.buildLocalChildren(getTreeItem()));
             } else {
                 outputPanel.println(JFTText.getLocalHost(), JFTText.textBlack("mkdir -p " + folderPath + " "), JFTText.failed());
             }
@@ -289,7 +283,7 @@ public class PathTreeCell extends TreeCell<Node> {
                 }
             }
 
-            parent.getChildren().setAll(TreeUtils.buildLocalChildren(parent, config));
+            parent.getChildren().setAll(TreeUtils.buildLocalChildren(parent));
         } else {
             connection.rm(getItem().getPath());
             parent.getChildren().setAll(TreeUtils.buildRemoteChildren(connection, parent));
@@ -344,7 +338,7 @@ public class PathTreeCell extends TreeCell<Node> {
         TreeItem<Node> root = getTreeView().getRoot();
 
         if (isLocalTree) {
-            root.getChildren().setAll(TreeUtils.buildLocalChildren(root, config));
+            root.getChildren().setAll(TreeUtils.buildLocalChildren(root));
         } else {
             root.getChildren().setAll(TreeUtils.buildRemoteChildren(connection, root));
         }
@@ -354,7 +348,7 @@ public class PathTreeCell extends TreeCell<Node> {
         getTreeView().getSelectionModel().clearSelection();
 
         if (isLocalTree) {
-            getTreeItem().getChildren().setAll(TreeUtils.buildLocalChildren(getTreeItem(), config));
+            getTreeItem().getChildren().setAll(TreeUtils.buildLocalChildren(getTreeItem()));
         } else {
             getTreeItem().getChildren().setAll(TreeUtils.buildRemoteChildren(connection, getTreeItem()));
         }

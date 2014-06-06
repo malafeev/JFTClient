@@ -7,17 +7,9 @@ import java.util.TreeSet;
  * @author smalafeev
  */
 public class Config {
-    private String user;
-    private boolean showHiddenFiles = false;
-    private Set<String> hostnames = new TreeSet<>();
-
-    public String getUser() {
-        return user;
-    }
-
-    public void setUser(String user) {
-        this.user = user;
-    }
+    private boolean showHiddenFiles;
+    private boolean savePasswords;
+    private Set<Host> hosts = new TreeSet<>();
 
     public boolean isShowHiddenFiles() {
         return showHiddenFiles;
@@ -27,15 +19,19 @@ public class Config {
         this.showHiddenFiles = showHiddenFiles;
     }
 
-    public boolean addHostname(String hostname) {
-        return this.hostnames.add(hostname);
+    public boolean isSavePasswords() {
+        return savePasswords;
     }
 
-    public Set<String> getHostnames() {
-        return hostnames;
+    public void setSavePasswords(boolean savePasswords) {
+        this.savePasswords = savePasswords;
     }
 
-    public void setHostnames(Set<String> hostnames) {
-        this.hostnames = hostnames;
+    public Set<Host> getHosts() {
+        return hosts;
+    }
+
+    public void setHosts(Set<Host> hosts) {
+        this.hosts = hosts;
     }
 }

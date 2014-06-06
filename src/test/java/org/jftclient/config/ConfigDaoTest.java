@@ -1,86 +1,97 @@
 package org.jftclient.config;
 
-import java.util.Set;
-
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertNull;
 import static org.testng.Assert.assertTrue;
 
 public class ConfigDaoTest {
     private ConfigDao configDao;
+    private Config initialConfig;
 
-    @BeforeMethod
-    public void setUp() {
-        configDao = new ConfigDao();
+    @BeforeClass
+    public void beforeAllTests() {
+        initialConfig = new ConfigDao().getConfig();
     }
 
-    @Test
-    public void testSetGetUsername() {
-        String initialUser = configDao.getUserName();
-        assertFalse(initialUser.isEmpty());
-
-        configDao.setUserName(null);
-        assertEquals(configDao.getUserName(), initialUser);
-
-        configDao.setUserName("");
-        assertEquals(configDao.getUserName(), initialUser);
+    @AfterClass
+    public void afterAllTests() {
+        ConfigDao dao = new ConfigDao();
+        dao.setConfig(initialConfig);
+        dao.save();
+    }
 
 
-        configDao.setUserName("testUser");
-        assertEquals(configDao.getUserName(), "testUser");
-
-        configDao.setUserName(initialUser);
-        assertEquals(configDao.getUserName(), initialUser);
+    @BeforeMethod
+    public void beforeEachTest() {
+        configDao = new ConfigDao();
     }
 
     @Test
     public void testSetGetShowHiddetFiles() {
         configDao.setShowHiddenFiles(true);
-        assertEquals(configDao.showHiddenFiles(), true);
+        assertTrue(configDao.showHiddenFiles());
 
         configDao.setShowHiddenFiles(false);
-        assertEquals(configDao.showHiddenFiles(), false);
+        assertFalse(configDao.showHiddenFiles());
     }
 
     @Test
-    public void testGetAddHostnames() {
-        Set<String> initial = configDao.getHostNames();
-        assertNotNull(initial);
+    public void testSavePasswords() {
+        configDao.setSavePasswords(true);
+        assertTrue(configDao.isSavePasswords());
 
-        assertFalse(configDao.addHostName(null));
-        assertEquals(configDao.getHostNames(), initial);
-
-        assertFalse(configDao.addHostName(""));
-        assertEquals(configDao.getHostNames(), initial);
-
-        assertTrue(configDao.addHostName("testHostname"));
-        assertTrue(configDao.getHostNames().contains("testHostname"));
-        assertFalse(configDao.addHostName("testHostname"));
+        configDao.setSavePasswords(false);
+        assertFalse(configDao.isSavePasswords());
     }
 
     @Test
     public void testSave() {
-        String initialUser = configDao.getUserName();
         boolean initialShow = configDao.showHiddenFiles();
+        boolean initialSavePasswords = configDao.isSavePasswords();
 
-        configDao.setUserName("testUserSave");
         configDao.setShowHiddenFiles(!initialShow);
+        configDao.setSavePasswords(!initialSavePasswords);
         configDao.save();
 
         configDao = new ConfigDao();
-        assertEquals(configDao.getUserName(), "testUserSave");
         assertEquals(configDao.showHiddenFiles(), !initialShow);
+        assertEquals(configDao.isSavePasswords(), !initialSavePasswords);
 
-        configDao.setUserName(initialUser);
         configDao.setShowHiddenFiles(initialShow);
+        configDao.setSavePasswords(initialSavePasswords);
         configDao.save();
 
         configDao = new ConfigDao();
-        assertEquals(configDao.getUserName(), initialUser);
         assertEquals(configDao.showHiddenFiles(), initialShow);
+        assertEquals(configDao.isSavePasswords(), initialSavePasswords);
+    }
+
+    @Test
+    public void testFindHostByName() {
+        assertNull(configDao.findHostByName(""));
+
+        String hostname = "just_a_test_host";
+        assertNull(configDao.findHostByName(hostname));
+
+        configDao.addHost("new_user", hostname, "passwd");
+        Host host = configDao.findHostByName(hostname);
+        assertEquals(host.getHostname(), hostname);
+    }
+
+    @Test
+    public void testGetHostnames() {
+        assertNotNull(configDao.getHostNames());
+
+        String hostname = "just_a_test_host";
+        assertFalse(configDao.getHostNames().contains(hostname));
+        configDao.addHost("new_user", hostname, "");
+        assertTrue(configDao.getHostNames().contains(hostname));
     }
 }
