@@ -11,12 +11,17 @@ import javafx.scene.text.TextFlow;
  * @author smalafeev
  */
 public class OutputPanel {
+    private static final OutputPanel instance = new OutputPanel();
     private ScrollPane scrollPane;
     private TextFlow textFlow;
 
-    public OutputPanel() {
+    private OutputPanel() {
         textFlow = new TextFlow();
         scrollPane = new ScrollPane(textFlow);
+    }
+
+    public static OutputPanel getInstance() {
+        return instance;
     }
 
     public void printRed(String text) {

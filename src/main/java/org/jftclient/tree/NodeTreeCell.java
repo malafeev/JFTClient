@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.IOException;
 
 import org.apache.commons.io.FileUtils;
-import org.jftclient.Common;
 import org.jftclient.JFTText;
 import org.jftclient.OutputPanel;
 import org.jftclient.ssh.Connection;
@@ -40,17 +39,17 @@ public class NodeTreeCell extends TreeCell<Node> {
     private static final Image FOLDER_EXPAND_IMAGE = new Image(ClassLoader.getSystemResourceAsStream("folder-open.png"));
     private static final Image FILE_IMAGE = new Image(ClassLoader.getSystemResourceAsStream("file.png"));
 
-    private boolean isLocalTree;
     private ContextMenu contextFileMenu = new ContextMenu();
     private ContextMenu contextFolderMenu = new ContextMenu();
     private Connection connection;
     private OutputPanel outputPanel;
     private Image currentImage;
+    private Tree tree;
 
-    public NodeTreeCell(boolean isLocalTree, Stage primaryStage) {
-        this.isLocalTree = isLocalTree;
-        this.connection = Common.getInstance().getConnection();
-        this.outputPanel = Common.getInstance().getOutputPanel();
+    public NodeTreeCell(Stage primaryStage, Connection connection, Tree tree) {
+        this.connection = connection;
+        this.outputPanel = OutputPanel.getInstance();
+        this.tree = tree;
 
         MenuItem refreshMenu = new MenuItem("Refresh");
         refreshMenu.setOnAction((ActionEvent event) -> {
@@ -220,11 +219,7 @@ public class NodeTreeCell extends TreeCell<Node> {
 
         dialog.close();
 
-        if (isLocalTree()) {
-            parent.getChildren().setAll(TreeUtils.buildLocalChildren(parent));
-        } else {
-            parent.getChildren().setAll(TreeUtils.buildRemoteChildren(connection, parent));
-        }
+        parent.getChildren().setAll(tree.buildChildren(parent));
     }
 
     private void createFolder(TextField folderField, Stage dialog) {
@@ -238,16 +233,16 @@ public class NodeTreeCell extends TreeCell<Node> {
         String folderPath = folder.getAbsolutePath();
 
         getTreeView().getSelectionModel().clearSelection();
-        if (isLocalTree) {
+        if (tree.isLocal()) {
             if (folder.mkdirs()) {
                 outputPanel.println(JFTText.getLocalHost(), JFTText.textBlack("mkdir -p " + folderPath));
-                getTreeItem().getChildren().setAll(TreeUtils.buildLocalChildren(getTreeItem()));
+                getTreeItem().getChildren().setAll(tree.buildChildren(getTreeItem()));
             } else {
                 outputPanel.println(JFTText.getLocalHost(), JFTText.textBlack("mkdir -p " + folderPath + " "), JFTText.failed());
             }
         } else {
             connection.mkdir(folderPath);
-            getTreeItem().getChildren().setAll(TreeUtils.buildRemoteChildren(connection, getTreeItem()));
+            getTreeItem().getChildren().setAll(tree.buildChildren(getTreeItem()));
         }
 
         getTreeView().getSelectionModel().select(getTreeItem());
@@ -259,7 +254,7 @@ public class NodeTreeCell extends TreeCell<Node> {
 
         TreeItem<Node> parent = getTreeItem().getParent();
 
-        if (isLocalTree) {
+        if (tree.isLocal()) {
             File src = new File(getItem().getPath());
             if (src.isFile()) {
                 if (!src.delete()) {
@@ -283,10 +278,10 @@ public class NodeTreeCell extends TreeCell<Node> {
                 }
             }
 
-            parent.getChildren().setAll(TreeUtils.buildLocalChildren(parent));
+            parent.getChildren().setAll(tree.buildChildren(parent));
         } else {
             connection.rm(getItem().getPath());
-            parent.getChildren().setAll(TreeUtils.buildRemoteChildren(connection, parent));
+            parent.getChildren().setAll(tree.buildChildren(parent));
         }
 
         getTreeView().getSelectionModel().select(parent);
@@ -330,28 +325,21 @@ public class NodeTreeCell extends TreeCell<Node> {
     }
 
     public boolean isLocalTree() {
-        return isLocalTree;
+        return tree.isLocal();
     }
 
-    public void refreshTree(Connection connection) {
+    public void refreshTree() {
         getTreeView().getSelectionModel().clearSelection();
         TreeItem<Node> root = getTreeView().getRoot();
 
-        if (isLocalTree) {
-            root.getChildren().setAll(TreeUtils.buildLocalChildren(root));
-        } else {
-            root.getChildren().setAll(TreeUtils.buildRemoteChildren(connection, root));
-        }
+        root.getChildren().setAll(tree.buildChildren(root));
+
     }
 
     private void refreshItem() {
         getTreeView().getSelectionModel().clearSelection();
 
-        if (isLocalTree) {
-            getTreeItem().getChildren().setAll(TreeUtils.buildLocalChildren(getTreeItem()));
-        } else {
-            getTreeItem().getChildren().setAll(TreeUtils.buildRemoteChildren(connection, getTreeItem()));
-        }
+        getTreeItem().getChildren().setAll(tree.buildChildren(getTreeItem()));
 
         getTreeView().getSelectionModel().select(getTreeItem());
     }

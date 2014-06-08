@@ -2,17 +2,19 @@ package org.jftclient;
 
 import java.awt.AWTException;
 import java.io.IOException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import org.jftclient.config.ConfigDao;
 import org.jftclient.config.Host;
+import org.jftclient.ssh.Connection;
 import org.jftclient.ssh.ConnectionState;
+import org.jftclient.tree.CommonTree;
+import org.jftclient.tree.LocalTree;
 import org.jftclient.tree.Node;
 import org.jftclient.tree.NodeTreeCell;
-import org.jftclient.tree.TreeUtils;
+import org.jftclient.tree.RemoteTree;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 import com.google.common.base.Strings;
 
@@ -59,13 +61,28 @@ public class JFTClient extends Application {
     private NodeTreeCell cellLocal;
     private NodeTreeCell cellRemote;
     private TitledPane remotePane = new TitledPane();
-    private final ExecutorService executorService = Executors.newCachedThreadPool();
     private Stage primaryStage;
+    private ConfigDao configDao;
+    private Connection connection;
+    private LocalTree localTree;
+    private RemoteTree remoteTree;
+    private CommonTree commonTree;
+    private AnnotationConfigApplicationContext context;
 
     @Override
     public void start(Stage primaryStage) throws IOException, AWTException {
         this.primaryStage = primaryStage;
         primaryStage.setTitle("JFTClient");
+
+        context =
+                new AnnotationConfigApplicationContext("org.jftclient");
+
+
+        configDao = context.getBean(ConfigDao.class);
+        connection = context.getBean(Connection.class);
+        localTree = context.getBean(LocalTree.class);
+        remoteTree = context.getBean(RemoteTree.class);
+        commonTree = context.getBean(CommonTree.class);
 
         TitledPane localPane = new TitledPane("Local", createLocalTree());
         localPane.setPrefHeight(1000f);
@@ -82,7 +99,7 @@ public class JFTClient extends Application {
         TabPane tabPane = new TabPane();
         Tab tabOutput = new Tab();
         tabOutput.setText("Output");
-        tabOutput.setContent(Common.getInstance().getOutputPanel().getScrollPane());
+        tabOutput.setContent(OutputPanel.getInstance().getScrollPane());
         tabOutput.setClosable(false);
 
         tabPane.getTabs().add(tabOutput);
@@ -109,17 +126,21 @@ public class JFTClient extends Application {
         primaryStage.show();
     }
 
+    @Override
+    public void stop() {
+        context.close();
+    }
+
     private MenuBar createMenu() {
         MenuBar menuBar = new MenuBar();
-        ConfigDao config = Common.getInstance().getConfig();
 
         Menu menuSettings = new Menu("Settings");
         CheckMenuItem cmSavePasswords = new CheckMenuItem("Save passwords");
-        cmSavePasswords.setSelected(config.isSavePasswords());
+        cmSavePasswords.setSelected(configDao.isSavePasswords());
 
         cmSavePasswords.selectedProperty().addListener((observable, oldValue, newValue) -> {
-            config.setSavePasswords(newValue);
-            config.save();
+            configDao.setSavePasswords(newValue);
+            configDao.save();
         });
 
         menuSettings.getItems().addAll(cmSavePasswords);
@@ -128,11 +149,8 @@ public class JFTClient extends Application {
     }
 
     private TreeView<Node> createLocalTree() {
-        Node node = new Node();
-        node.setName("/");
-        node.setFile(false);
-        node.setPath("/");
-        TreeItem<Node> root = TreeUtils.createLocalNode(node);
+
+        TreeItem<Node> root = localTree.createRootNode();
         root.setExpanded(true);
         TreeView<Node> treeView = new TreeView<>(root);
 
@@ -140,63 +158,52 @@ public class JFTClient extends Application {
         treeView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 
         treeView.setCellFactory(param -> {
-            cellLocal = new NodeTreeCell(true, primaryStage);
-            TreeUtils.setDragDropEvent(cellLocal, executorService);
+            cellLocal = new NodeTreeCell(primaryStage, connection, localTree);
+            commonTree.setDragDropEvent(cellLocal, localTree);
             return cellLocal;
         });
 
         return treeView;
     }
 
-    @Override
-    public void stop() {
-        Common.getInstance().getConnection().disconnect();
-        executorService.shutdownNow();
-    }
-
     private void connect() {
-        Common.getInstance().getConnection().disconnect();
+        connection.disconnect();
 
         String host = hostField.getValue();
         if (Strings.isNullOrEmpty(host)) {
-            Common.getInstance().getOutputPanel().printRed("host is empty\n");
+            OutputPanel.getInstance().printRed("host is empty\n");
             return;
         }
 
         String user = userField.getText();
         if (user.isEmpty()) {
-            Common.getInstance().getOutputPanel().printRed("user is empty\n");
+            OutputPanel.getInstance().printRed("user is empty\n");
             return;
         }
 
         String password = passwordField.getText();
         if (password.isEmpty()) {
-            Common.getInstance().getOutputPanel().printRed("password is empty\n");
+            OutputPanel.getInstance().printRed("password is empty\n");
             return;
         }
 
-        ConnectionState connectionState = Common.getInstance().getConnection().connect(host, user, password);
+        ConnectionState connectionState = connection.connect(host, user, password);
         if (!connectionState.isSuccess()) {
             logger.warn("failed to connect");
             return;
         }
 
-        Common.getInstance().getConfig().addHost(user, host, Common.getInstance().getConfig().isSavePasswords() ? password : "");
-        Common.getInstance().getConfig().save();
+        configDao.addHost(user, host, configDao.isSavePasswords() ? password : "");
+        configDao.save();
 
 
-        Node node = new Node();
-        node.setFile(false);
-        node.setPath("/");
-        node.setName("/");
-
-        TreeItem<Node> root = TreeUtils.createRemoteNode(Common.getInstance().getConnection(), node);
+        TreeItem<Node> root = remoteTree.createRootNote();
         root.setExpanded(true);
         TreeView<Node> treeView = new TreeView<>(root);
 
         treeView.setCellFactory(param -> {
-            cellRemote = new NodeTreeCell(false, primaryStage);
-            TreeUtils.setDragDropEvent(cellRemote, executorService);
+            cellRemote = new NodeTreeCell(primaryStage, connection, remoteTree);
+            commonTree.setDragDropEvent(cellRemote, localTree);
             return cellRemote;
         });
 
@@ -212,10 +219,10 @@ public class JFTClient extends Application {
 
         hostField.setEditable(true);
         hostField.setPrefWidth(200.0);
-        hostField.getItems().addAll(Common.getInstance().getConfig().getHostNames());
+        hostField.getItems().addAll(configDao.getHostNames());
 
         hostField.valueProperty().addListener((observable, oldValue, newValue) -> {
-            Host host = Common.getInstance().getConfig().findHostByName(newValue);
+            Host host = configDao.findHostByName(newValue);
             if (host == null) {
                 return;
             }
@@ -225,7 +232,7 @@ public class JFTClient extends Application {
             }
         });
 
-        cbxHiddenFiles.setSelected(Common.getInstance().getConfig().showHiddenFiles());
+        cbxHiddenFiles.setSelected(configDao.showHiddenFiles());
 
         Button button = new Button("Connect");
         button.setOnAction(event -> connect());
@@ -241,12 +248,12 @@ public class JFTClient extends Application {
 
         cbxHiddenFiles.selectedProperty().addListener((ov, oldVal, newVal) -> {
 
-            Common.getInstance().getConfig().setShowHiddenFiles(newVal);
-            Common.getInstance().getConfig().save();
+            configDao.setShowHiddenFiles(newVal);
+            configDao.save();
 
-            cellLocal.refreshTree(Common.getInstance().getConnection());
+            cellLocal.refreshTree();
             if (cellRemote != null) {
-                cellRemote.refreshTree(Common.getInstance().getConnection());
+                cellRemote.refreshTree();
             }
 
         });

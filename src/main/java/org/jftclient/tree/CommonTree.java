@@ -2,13 +2,13 @@ package org.jftclient.tree;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-import org.jftclient.Common;
+import javax.annotation.PreDestroy;
+
 import org.jftclient.JFTText;
 import org.jftclient.LocalFileUtils;
 import org.jftclient.OutputPanel;
@@ -16,8 +16,9 @@ import org.jftclient.command.CommandCopy;
 import org.jftclient.command.CommandCopyExecution;
 import org.jftclient.command.CommandCopyFactory;
 import org.jftclient.ssh.Connection;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
-import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.control.TreeItem;
 import javafx.scene.input.ClipboardContent;
@@ -28,98 +29,14 @@ import javafx.scene.input.TransferMode;
 /**
  * @author smalafeev
  */
-public class TreeUtils {
+@Component
+public class CommonTree {
     private static DataFormat dataFormat = new DataFormat("tree");
+    @Autowired
+    private Connection connection;
+    private ExecutorService executorService = Executors.newCachedThreadPool();
 
-    public static TreeItem<Node> createRemoteNode(Connection connection, Node node) {
-        return new TreeItem<Node>(node) {
-            private boolean isFirstTimeChildren = true;
-
-            @Override
-            public ObservableList<TreeItem<Node>> getChildren() {
-                if (isFirstTimeChildren) {
-                    isFirstTimeChildren = false;
-                    super.getChildren().setAll(buildRemoteChildren(connection, this));
-                }
-                return super.getChildren();
-            }
-
-            @Override
-            public boolean isLeaf() {
-                return getValue().isFile();
-            }
-        };
-    }
-
-    public static TreeItem<Node> createLocalNode(final Node node) {
-        return new TreeItem<Node>(node) {
-            private boolean isFirstTimeChildren = true;
-
-            @Override
-            public ObservableList<TreeItem<Node>> getChildren() {
-                if (isFirstTimeChildren) {
-                    isFirstTimeChildren = false;
-                    super.getChildren().setAll(buildLocalChildren(this));
-                }
-                return super.getChildren();
-            }
-
-            @Override
-            public boolean isLeaf() {
-                return getValue().isFile();
-            }
-        };
-    }
-
-    public static ObservableList<TreeItem<Node>> buildLocalChildren(TreeItem<Node> treeItem) {
-        Node f = treeItem.getValue();
-        if (f != null && !f.isFile()) {
-            File[] files = new File(f.getPath()).listFiles();
-            if (files != null) {
-                ObservableList<TreeItem<Node>> children = FXCollections.observableArrayList();
-
-                for (File childFile : files) {
-                    if (!Common.getInstance().getConfig().showHiddenFiles()) {
-                        if (childFile.isHidden()) {
-                            continue;
-                        }
-                    }
-                    children.add(createLocalNode(new Node(childFile)));
-                }
-                Collections.sort(children, new Comparator<TreeItem<Node>>() {
-                    @Override
-                    public int compare(TreeItem<Node> o1, TreeItem<Node> o2) {
-                        return o1.getValue().getName().compareTo(o2.getValue().getName());
-                    }
-                });
-
-                return children;
-            }
-        }
-
-        return FXCollections.emptyObservableList();
-    }
-
-    public static ObservableList<TreeItem<Node>> buildRemoteChildren(Connection connection, TreeItem<Node> treeItem) {
-        Node f = treeItem.getValue();
-        if (f != null && !f.isFile()) {
-            List<Node> files = connection.getNodes(f.getPath());
-            if (files != null) {
-                ObservableList<TreeItem<Node>> children = FXCollections.observableArrayList();
-
-                for (Node childFile : files) {
-                    children.add(createRemoteNode(connection, childFile));
-                }
-
-                return children;
-            }
-        }
-
-        return FXCollections.emptyObservableList();
-    }
-
-    public static void setDragDropEvent(NodeTreeCell cell, ExecutorService executorService) {
-
+    public void setDragDropEvent(NodeTreeCell cell, LocalTree localTree) {
         //Source:
         cell.setOnDragDetected(event -> {
             Dragboard db = cell.startDragAndDrop(TransferMode.ANY);
@@ -172,7 +89,7 @@ public class TreeUtils {
             List<Node> files = (List<Node>) db.getContent(dataFormat);
             String targetPath = cell.getItem().getPath();
 
-            OutputPanel outputPanel = Common.getInstance().getOutputPanel();
+            OutputPanel outputPanel = OutputPanel.getInstance();
 
             if (source.isLocalTree() && target.isLocalTree()) {
                 //Local to Local
@@ -196,14 +113,14 @@ public class TreeUtils {
                     }
 
                     cell.getTreeItem().getChildren().clear();
-                    cell.getTreeItem().getChildren().addAll(TreeUtils.buildLocalChildren(cell.getTreeItem()));
+                    cell.getTreeItem().getChildren().addAll(localTree.buildChildren(cell.getTreeItem()));
                 }
             } else if (source.isLocalTree() && !target.isLocalTree()) {
                 //Local to Remote
                 List<CommandCopy> commandCopies = getCommands(files, source.isLocalTree(), target.isLocalTree(), targetPath);
 
                 for (CommandCopy commandCopy : commandCopies) {
-                    CommandCopyExecution commandCopyExecution = new CommandCopyExecution(commandCopy);
+                    CommandCopyExecution commandCopyExecution = new CommandCopyExecution(commandCopy, connection);
                     Future<Boolean> task = executorService.submit(commandCopyExecution);
 
                 }
@@ -212,14 +129,14 @@ public class TreeUtils {
                 List<CommandCopy> commandCopies = getCommands(files, source.isLocalTree(), target.isLocalTree(), targetPath);
 
                 for (CommandCopy commandCopy : commandCopies) {
-                    Common.getInstance().getConnection().sendCommand(commandCopy.toString());
+                    connection.sendCommand(commandCopy.toString());
                 }
             } else if (!source.isLocalTree() && target.isLocalTree()) {
                 //Remote to Local
                 List<CommandCopy> commandCopies = getCommands(files, source.isLocalTree(), target.isLocalTree(), targetPath);
 
                 for (CommandCopy commandCopy : commandCopies) {
-                    CommandCopyExecution commandCopyExecution = new CommandCopyExecution(commandCopy);
+                    CommandCopyExecution commandCopyExecution = new CommandCopyExecution(commandCopy, connection);
                     Future<Boolean> task = executorService.submit(commandCopyExecution);
                 }
             }
@@ -233,13 +150,18 @@ public class TreeUtils {
         });
     }
 
-    private static List<CommandCopy> getCommands(List<Node> files, boolean isSourceLocal, boolean isTargetLocal, String targetPath) {
+    private List<CommandCopy> getCommands(List<Node> files, boolean isSourceLocal, boolean isTargetLocal, String targetPath) {
         List<String> sources = new ArrayList<>();
         for (Node file : files) {
             sources.add(file.getPath());
         }
 
-        CommandCopyFactory commandCopyFactory = new CommandCopyFactory(Common.getInstance().getConnection());
+        CommandCopyFactory commandCopyFactory = new CommandCopyFactory(connection);
         return commandCopyFactory.buildCommands(isSourceLocal, isTargetLocal, targetPath, sources);
+    }
+
+    @PreDestroy
+    public void destroy() {
+        executorService.shutdownNow();
     }
 }

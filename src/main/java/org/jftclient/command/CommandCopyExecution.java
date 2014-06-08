@@ -8,9 +8,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
 
-import org.jftclient.Common;
 import org.jftclient.JFTText;
 import org.jftclient.OutputPanel;
+import org.jftclient.ssh.Connection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,12 +28,12 @@ public class CommandCopyExecution implements Callable<Boolean> {
     private Process process;
     private OutputPanel outputPanel;
 
-    public CommandCopyExecution(CommandCopy commandCopy) {
+    public CommandCopyExecution(CommandCopy commandCopy, Connection connection) {
         this.commandCopy = commandCopy;
-        this.outputPanel = Common.getInstance().getOutputPanel();
+        this.outputPanel = OutputPanel.getInstance();
 
         commandWithoutPassword = this.commandCopy.toString().replaceFirst("sshpass -p "
-                + Common.getInstance().getConnection().getPassword() + " ", "").replaceFirst("-e ssh -q -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no ", "");
+                + connection.getPassword() + " ", "").replaceFirst("-e ssh -q -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no ", "");
     }
 
     @Override
