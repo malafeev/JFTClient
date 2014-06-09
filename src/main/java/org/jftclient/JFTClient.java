@@ -74,15 +74,7 @@ public class JFTClient extends Application {
         this.primaryStage = primaryStage;
         primaryStage.setTitle("JFTClient");
 
-        context =
-                new AnnotationConfigApplicationContext("org.jftclient");
-
-
-        configDao = context.getBean(ConfigDao.class);
-        connection = context.getBean(Connection.class);
-        localTree = context.getBean(LocalTree.class);
-        remoteTree = context.getBean(RemoteTree.class);
-        commonTree = context.getBean(CommonTree.class);
+        initSpring();
 
         TitledPane localPane = new TitledPane("Local", createLocalTree());
         localPane.setPrefHeight(1000f);
@@ -129,6 +121,16 @@ public class JFTClient extends Application {
     @Override
     public void stop() {
         context.close();
+    }
+
+    private void initSpring() {
+        context = new AnnotationConfigApplicationContext("org.jftclient");
+
+        configDao = context.getBean(ConfigDao.class);
+        connection = context.getBean(Connection.class);
+        localTree = context.getBean(LocalTree.class);
+        remoteTree = context.getBean(RemoteTree.class);
+        commonTree = context.getBean(CommonTree.class);
     }
 
     private MenuBar createMenu() {
