@@ -3,8 +3,10 @@ package org.jftclient;
 import java.awt.AWTException;
 import java.io.IOException;
 
-import org.jftclient.config.ConfigDao;
-import org.jftclient.config.Host;
+import org.jftclient.config.dao.ConfigDao;
+import org.jftclient.config.dao.HostDao;
+import org.jftclient.config.domain.Config;
+import org.jftclient.config.domain.Host;
 import org.jftclient.ssh.Connection;
 import org.jftclient.ssh.ConnectionState;
 import org.jftclient.tree.CommonTree;
@@ -63,6 +65,7 @@ public class JFTClient extends Application {
     private TitledPane remotePane = new TitledPane();
     private Stage primaryStage;
     private ConfigDao configDao;
+    private HostDao hostDao;
     private Connection connection;
     private LocalTree localTree;
     private RemoteTree remoteTree;
@@ -124,9 +127,14 @@ public class JFTClient extends Application {
     }
 
     private void initSpring() {
-        context = new AnnotationConfigApplicationContext("org.jftclient");
+        context = new AnnotationConfigApplicationContext(JFTConfiguration.class);
 
         configDao = context.getBean(ConfigDao.class);
+        if (configDao.get() == null) {
+            Config config = new Config();
+            configDao.save(config);
+        }
+        hostDao = context.getBean(HostDao.class);
         connection = context.getBean(Connection.class);
         localTree = context.getBean(LocalTree.class);
         remoteTree = context.getBean(RemoteTree.class);
@@ -138,11 +146,12 @@ public class JFTClient extends Application {
 
         Menu menuSettings = new Menu("Settings");
         CheckMenuItem cmSavePasswords = new CheckMenuItem("Save passwords");
-        cmSavePasswords.setSelected(configDao.isSavePasswords());
+        cmSavePasswords.setSelected(configDao.get().isSavePasswords());
 
         cmSavePasswords.selectedProperty().addListener((observable, oldValue, newValue) -> {
-            configDao.setSavePasswords(newValue);
-            configDao.save();
+            Config config = configDao.get();
+            config.setSavePasswords(newValue);
+            configDao.save(config);
         });
 
         menuSettings.getItems().addAll(cmSavePasswords);
@@ -195,9 +204,15 @@ public class JFTClient extends Application {
             return;
         }
 
-        configDao.addHost(user, host, configDao.isSavePasswords() ? password : "");
-        configDao.save();
-
+        Config config = configDao.get();
+        Host host1 = hostDao.getHostByName(host);
+        if (host1 == null) {
+            host1 = new Host();
+            host1.setHostname(host);
+        }
+        host1.setUsername(user);
+        host1.setPassword(config.isSavePasswords() ? password : "");
+        hostDao.save(host1);
 
         TreeItem<Node> root = remoteTree.createRootNote();
         root.setExpanded(true);
@@ -221,10 +236,12 @@ public class JFTClient extends Application {
 
         hostField.setEditable(true);
         hostField.setPrefWidth(200.0);
-        hostField.getItems().addAll(configDao.getHostNames());
+
+        hostField.getItems().addAll(hostDao.getHostNames());
 
         hostField.valueProperty().addListener((observable, oldValue, newValue) -> {
-            Host host = configDao.findHostByName(newValue);
+
+            Host host = hostDao.getHostByName(newValue);
             if (host == null) {
                 return;
             }
@@ -234,7 +251,7 @@ public class JFTClient extends Application {
             }
         });
 
-        cbxHiddenFiles.setSelected(configDao.showHiddenFiles());
+        cbxHiddenFiles.setSelected(configDao.get().isShowHiddenFiles());
 
         Button button = new Button("Connect");
         button.setOnAction(event -> connect());
@@ -250,8 +267,9 @@ public class JFTClient extends Application {
 
         cbxHiddenFiles.selectedProperty().addListener((ov, oldVal, newVal) -> {
 
-            configDao.setShowHiddenFiles(newVal);
-            configDao.save();
+            Config config = configDao.get();
+            config.setShowHiddenFiles(newVal);
+            configDao.save(config);
 
             cellLocal.refreshTree();
             if (cellRemote != null) {

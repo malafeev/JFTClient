@@ -1,15 +1,17 @@
-package org.jftclient.config;
+package org.jftclient.config.domain;
 
-import java.util.Set;
-import java.util.TreeSet;
+import javax.persistence.Entity;
+import javax.persistence.Id;
 
 /**
  * @author smalafeev
  */
+@Entity
 public class Config {
+    @Id
+    private long id = 1;
     private boolean showHiddenFiles;
     private boolean savePasswords;
-    private Set<Host> hosts = new TreeSet<>();
 
     public boolean isShowHiddenFiles() {
         return showHiddenFiles;
@@ -25,13 +27,5 @@ public class Config {
 
     public void setSavePasswords(boolean savePasswords) {
         this.savePasswords = savePasswords;
-    }
-
-    public Set<Host> getHosts() {
-        return hosts;
-    }
-
-    public void setHosts(Set<Host> hosts) {
-        this.hosts = hosts;
     }
 }

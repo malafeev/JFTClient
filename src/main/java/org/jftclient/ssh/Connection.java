@@ -17,7 +17,7 @@ import javax.annotation.PreDestroy;
 
 import org.jftclient.JFTText;
 import org.jftclient.OutputPanel;
-import org.jftclient.config.ConfigDao;
+import org.jftclient.config.dao.ConfigDao;
 import org.jftclient.tree.Node;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -178,7 +178,7 @@ public class Connection {
             return files;
         }
 
-        final boolean showHiddenFiles = configDao.showHiddenFiles();
+        final boolean showHiddenFiles = configDao.get().isShowHiddenFiles();
 
         try {
             sftpChannel.ls(path, new ChannelSftp.LsEntrySelector() {

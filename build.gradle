@@ -22,8 +22,6 @@ repositories {
     mavenCentral()
 }
 
-
-
 dependencies {
     compile 'commons-io:commons-io:2.4'
     compile 'com.fasterxml.jackson.core:jackson-databind:2.4.0'
@@ -35,6 +33,11 @@ dependencies {
     compile("org.springframework:spring-context:4.0.5.RELEASE") {
         exclude group: 'commons-logging', module: 'commons-logging'
     }
+    compile 'org.springframework:spring-orm:4.0.5.RELEASE'
+    compile 'org.springframework.data:spring-data-jpa:1.6.0.RELEASE'
+
+    compile 'org.hibernate:hibernate-entitymanager:4.3.5.Final'
+    compile 'com.h2database:h2:1.4.178'
 
     //Test:
     testCompile 'org.testng:testng:6.8.8'

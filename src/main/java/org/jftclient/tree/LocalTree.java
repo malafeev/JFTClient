@@ -4,7 +4,7 @@ import java.io.File;
 import java.util.Collections;
 import java.util.Comparator;
 
-import org.jftclient.config.ConfigDao;
+import org.jftclient.config.dao.ConfigDao;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -63,7 +63,7 @@ public class LocalTree implements Tree {
                 ObservableList<TreeItem<Node>> children = FXCollections.observableArrayList();
 
                 for (File childFile : files) {
-                    if (!configDao.showHiddenFiles()) {
+                    if (!configDao.get().isShowHiddenFiles()) {
                         if (childFile.isHidden()) {
                             continue;
                         }
