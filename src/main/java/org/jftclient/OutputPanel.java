@@ -49,9 +49,27 @@ public class OutputPanel {
         scrollPane.setVvalue(1.0);
     }
 
+    public void printOutputLater(Text... text) {
+        Platform.runLater(() -> {
+            print(text);
+        });
+    }
+
+    public void printlnOutputLater(Text... text) {
+        Platform.runLater(() -> {
+            println(text);
+        });
+    }
+
     public void printlnOutputLater(List<Text> out) {
         Platform.runLater(() -> {
             println(out.toArray(new Text[out.size()]));
+        });
+    }
+
+    public void printOutputLater(List<Text> out) {
+        Platform.runLater(() -> {
+            print(out.toArray(new Text[out.size()]));
         });
     }
 

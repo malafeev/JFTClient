@@ -38,20 +38,17 @@ public class CommandCopyExecution implements Callable<Boolean> {
 
     @Override
     public Boolean call() {
-
-        List<Text> output = new ArrayList<>();
-        output.add(getLocalHost());
-        output.add(JFTText.textBlack(commandWithoutPassword + "\n"));
+        OutputPanel.getInstance().printOutputLater(getLocalHost(), JFTText.textBlack(commandWithoutPassword));
 
         Process pr;
         try {
             pr = setProcess(new ProcessBuilder(commandCopy.toArray()).start());
         } catch (IOException ex) {
             logger.error("failed commandCopy: {}", commandWithoutPassword, ex);
-            output.add(JFTText.failed());
-            outputPanel.printlnOutputLater(output);
+            outputPanel.printlnOutputLater(JFTText.failed());
             return false;
         }
+        List<Text> output = new ArrayList<>();
         try (BufferedReader stdInput = new BufferedReader(new InputStreamReader(pr.getInputStream(), Charset.defaultCharset()));
              BufferedReader stdError = new BufferedReader(new InputStreamReader(pr.getErrorStream(), Charset.defaultCharset()))) {
             String s;
@@ -71,19 +68,19 @@ public class CommandCopyExecution implements Callable<Boolean> {
         }
 
         boolean res = false;
-        output.add(JFTText.textBlack(commandWithoutPassword));
         try {
             if (pr.waitFor() != 0) {
-                output.add(JFTText.failed());
+                OutputPanel.getInstance().printlnOutputLater(JFTText.failed());
             } else {
-                output.add(JFTText.done());
+                OutputPanel.getInstance().printlnOutputLater(JFTText.done());
                 res = true;
             }
         } catch (InterruptedException e) {
             logger.warn("interrupted", e);
         }
-
-        outputPanel.printlnOutputLater(output);
+        if (!output.isEmpty()) {
+            OutputPanel.getInstance().printOutputLater(output);
+        }
 
         return res;
     }

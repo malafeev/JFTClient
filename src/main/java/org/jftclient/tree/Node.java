@@ -20,7 +20,6 @@ public class Node implements Comparable<Node>, Serializable {
     private boolean isFile;
     private boolean isLocal;
 
-
     public Node() {
     }
 
@@ -37,7 +36,6 @@ public class Node implements Comparable<Node>, Serializable {
         } catch (IOException e) {
             logger.error("Cannot read symbolic link " + file, e);
         }
-
     }
 
     public String getName() {

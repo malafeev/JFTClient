@@ -24,7 +24,6 @@ repositories {
 
 dependencies {
     compile 'commons-io:commons-io:2.4'
-    compile 'com.fasterxml.jackson.core:jackson-databind:2.4.0'
     compile 'ch.qos.logback:logback-classic:1.1.2'
     compile 'org.slf4j:jcl-over-slf4j:1.7.6'
     compile 'com.jcraft:jsch:0.1.51'

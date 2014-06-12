@@ -9,9 +9,17 @@ import javax.persistence.Id;
 @Entity
 public class Config {
     @Id
-    private long id = 1;
+    private long id = 1L;
     private boolean showHiddenFiles;
     private boolean savePasswords;
+
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
+    }
 
     public boolean isShowHiddenFiles() {
         return showHiddenFiles;

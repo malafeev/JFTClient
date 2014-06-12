@@ -308,9 +308,7 @@ public class NodeTreeCell extends TreeCell<Node> {
                     currentImage = FOLDER_COLLAPSE_IMAGE;
                 }
             }
-
             setGraphic(new ImageView(currentImage));
-            //setGraphic(getTreeItem().getGraphic());
 
             if (item.getLinkDest() != null) {
                 setTextFill(Color.BLUE);
@@ -331,16 +329,12 @@ public class NodeTreeCell extends TreeCell<Node> {
     public void refreshTree() {
         getTreeView().getSelectionModel().clearSelection();
         TreeItem<Node> root = getTreeView().getRoot();
-
         root.getChildren().setAll(tree.buildChildren(root));
-
     }
 
     private void refreshItem() {
         getTreeView().getSelectionModel().clearSelection();
-
         getTreeItem().getChildren().setAll(tree.buildChildren(getTreeItem()));
-
         getTreeView().getSelectionModel().select(getTreeItem());
     }
 

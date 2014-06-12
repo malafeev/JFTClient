@@ -7,8 +7,11 @@ import javafx.scene.text.Text;
  * @author smalafeev
  */
 public class JFTText {
-    private static final String DONE = "DONE";
-    private static final String FAILED = "FAILED";
+    private static final String DONE = " DONE";
+    private static final String FAILED = " FAILED";
+
+    private JFTText() {
+    }
 
     public static Text getLocalHost() {
         Text text = new Text("[localhost] ");

@@ -17,6 +17,22 @@ public class Host implements Comparable<Host> {
     private String hostname;
     private String password;
 
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
     public String getHostname() {
         return hostname;
     }
@@ -42,7 +58,6 @@ public class Host implements Comparable<Host> {
 
         if (hostname != null ? !hostname.equals(host.hostname) : host.hostname != null) return false;
 
-
         return true;
     }
 
@@ -56,13 +71,5 @@ public class Host implements Comparable<Host> {
     @Override
     public int compareTo(Host o) {
         return hostname.compareTo(o.getHostname());
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
     }
 }

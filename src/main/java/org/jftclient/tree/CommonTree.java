@@ -58,7 +58,12 @@ public class CommonTree {
 
         //Target:
         cell.setOnDragOver(event -> {
-            if (event.getGestureSource() != cell) {
+            NodeTreeCell source = (NodeTreeCell) event.getGestureSource();
+
+            //check that if target is file then source is not directory:
+            boolean validNodes = !(cell.getItem().isFile() && !source.getItem().isFile());
+
+            if (event.getGestureSource() != cell && validNodes) {
                 event.acceptTransferModes(TransferMode.COPY);
             }
             event.consume();

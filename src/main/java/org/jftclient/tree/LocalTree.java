@@ -25,6 +25,7 @@ public class LocalTree implements Tree {
         node.setName("/");
         node.setFile(false);
         node.setPath("/");
+        node.setLocal(true);
         return createNode(node);
     }
 
@@ -63,10 +64,8 @@ public class LocalTree implements Tree {
                 ObservableList<TreeItem<Node>> children = FXCollections.observableArrayList();
 
                 for (File childFile : files) {
-                    if (!configDao.get().isShowHiddenFiles()) {
-                        if (childFile.isHidden()) {
-                            continue;
-                        }
+                    if (!configDao.get().isShowHiddenFiles() && childFile.isHidden()) {
+                        continue;
                     }
                     children.add(createNode(new Node(childFile)));
                 }

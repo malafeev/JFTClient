@@ -201,6 +201,7 @@ public class JFTClient extends Application {
         ConnectionState connectionState = connection.connect(host, user, password);
         if (!connectionState.isSuccess()) {
             logger.warn("failed to connect");
+            OutputPanel.getInstance().printRed(connectionState.getMsg());
             return;
         }
 
