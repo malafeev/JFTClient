@@ -10,6 +10,8 @@ archivesBaseName = applicationName
 version = "0.1.0"
 mainClassName = "org.jftclient.JFTClient"
 
+
+
 jar {
     baseName = 'jftclient'
     version = "$version"
@@ -26,7 +28,11 @@ dependencies {
     compile 'commons-io:commons-io:2.4'
     compile 'ch.qos.logback:logback-classic:1.1.2'
     compile 'org.slf4j:jcl-over-slf4j:1.7.6'
+
     compile 'com.jcraft:jsch:0.1.51'
+    compile 'org.apache.sshd:sshd-core:0.11.0'
+    compile 'org.bouncycastle:bcpkix-jdk15on:1.50'
+
     compile 'com.google.guava:guava:17.0'
 
     compile("org.springframework:spring-context:4.0.5.RELEASE") {
@@ -74,4 +80,11 @@ task install {
     }
 }
 
+/*startScripts {
+    doLast {
+        unixScript.text = "ept" +  unixScript.text
+    }
+}*/
+
 install.dependsOn clean, test, installApp
+

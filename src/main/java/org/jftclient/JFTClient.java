@@ -9,6 +9,9 @@ import org.jftclient.config.domain.Config;
 import org.jftclient.config.domain.Host;
 import org.jftclient.ssh.Connection;
 import org.jftclient.ssh.ConnectionState;
+import org.jftclient.terminal.LocalSSHServer;
+import org.jftclient.terminal.TermUtils;
+import org.jftclient.terminal.TerminalPanel;
 import org.jftclient.tree.CommonTree;
 import org.jftclient.tree.LocalTree;
 import org.jftclient.tree.Node;
@@ -19,8 +22,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 import com.google.common.base.Strings;
+import com.jcraft.jsch.JSchException;
 
 import javafx.application.Application;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.geometry.Orientation;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -70,6 +76,8 @@ public class JFTClient extends Application {
     private LocalTree localTree;
     private RemoteTree remoteTree;
     private CommonTree commonTree;
+    private LocalSSHServer localSSHServer;
+    private TerminalPanel terminalPanel;
     private AnnotationConfigApplicationContext context;
 
     @Override
@@ -97,7 +105,11 @@ public class JFTClient extends Application {
         tabOutput.setContent(OutputPanel.getInstance().getScrollPane());
         tabOutput.setClosable(false);
 
-        tabPane.getTabs().add(tabOutput);
+        Tab tabTerminal = new Tab("Terminal");
+        tabTerminal.setContent(terminalPanel.getPanel());
+        tabTerminal.setClosable(false);
+
+        tabPane.getTabs().addAll(tabOutput, tabTerminal);
 
         SplitPane splitHorizontal = new SplitPane();
         splitHorizontal.getItems().addAll(splitTrees, tabPane);
@@ -118,6 +130,26 @@ public class JFTClient extends Application {
         Scene scene = new Scene(borderPane, 950, 700, Color.WHITE);
         primaryStage.setScene(scene);
         primaryStage.getIcons().add(new Image("java.png"));
+
+        tabTerminal.selectedProperty().addListener(new ChangeListener<Boolean>() {
+            @Override
+            public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
+                if (newValue) {
+                    if (localSSHServer.isRunning()) {
+                        return;
+                    }
+
+                    try {
+                        TermUtils.openLocalTerm(localSSHServer, terminalPanel);
+                    } catch (JSchException e) {
+                        e.printStackTrace();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        });
+
         primaryStage.show();
     }
 
@@ -139,6 +171,8 @@ public class JFTClient extends Application {
         localTree = context.getBean(LocalTree.class);
         remoteTree = context.getBean(RemoteTree.class);
         commonTree = context.getBean(CommonTree.class);
+        localSSHServer = context.getBean(LocalSSHServer.class);
+        terminalPanel = context.getBean(TerminalPanel.class);
     }
 
     private MenuBar createMenu() {
