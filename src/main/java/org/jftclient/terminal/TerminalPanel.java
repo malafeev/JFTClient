@@ -22,7 +22,7 @@ public class TerminalPanel {
 
     public TerminalPanel() {
         textArea = new TextArea();
-        textArea.setFont(Font.font("Monospaced", 15));
+        textArea.setFont(Font.font("Monospaced", 14));
     }
 
     public void setPrintStream(PrintStream printStream) {

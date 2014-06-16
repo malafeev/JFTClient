@@ -31,7 +31,6 @@ import javafx.beans.value.ObservableValue;
 import javafx.geometry.Orientation;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.control.CheckBox;
 import javafx.scene.control.CheckMenuItem;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
@@ -66,7 +65,6 @@ public class JFTClient extends Application {
     private ComboBox<String> hostField = new ComboBox<>();
     private TextField userField = new TextField();
     private PasswordField passwordField = new PasswordField();
-    private CheckBox cbxHiddenFiles = new CheckBox("show hidden files");
     private NodeTreeCell cellLocal;
     private NodeTreeCell cellRemote;
     private TitledPane remotePane = new TitledPane();
@@ -170,7 +168,6 @@ public class JFTClient extends Application {
             }
         });
 
-
         primaryStage.show();
     }
 
@@ -201,6 +198,23 @@ public class JFTClient extends Application {
     private MenuBar createMenu() {
         MenuBar menuBar = new MenuBar();
 
+        Menu menuView = new Menu("View");
+        CheckMenuItem cmShowHiddenFiles = new CheckMenuItem("show hidden files");
+        cmShowHiddenFiles.setSelected(configDao.get().isShowHiddenFiles());
+
+        cmShowHiddenFiles.selectedProperty().addListener((observable, oldValue, newValue) -> {
+            Config config = configDao.get();
+            config.setShowHiddenFiles(newValue);
+            configDao.save(config);
+
+            cellLocal.refreshTree();
+            if (cellRemote != null) {
+                cellRemote.refreshTree();
+            }
+        });
+
+        menuView.getItems().addAll(cmShowHiddenFiles);
+
         Menu menuSettings = new Menu("Settings");
         CheckMenuItem cmSavePasswords = new CheckMenuItem("Save passwords");
         cmSavePasswords.setSelected(configDao.get().isSavePasswords());
@@ -212,7 +226,8 @@ public class JFTClient extends Application {
         });
 
         menuSettings.getItems().addAll(cmSavePasswords);
-        menuBar.getMenus().addAll(menuSettings);
+
+        menuBar.getMenus().addAll(menuView, menuSettings);
         return menuBar;
     }
 
@@ -322,8 +337,6 @@ public class JFTClient extends Application {
             }
         });
 
-        cbxHiddenFiles.setSelected(configDao.get().isShowHiddenFiles());
-
         Button button = new Button("Connect");
         button.setOnAction(event -> connect());
 
@@ -336,19 +349,6 @@ public class JFTClient extends Application {
         Region region = new Region();
         HBox.setHgrow(region, Priority.ALWAYS);
 
-        cbxHiddenFiles.selectedProperty().addListener((ov, oldVal, newVal) -> {
-
-            Config config = configDao.get();
-            config.setShowHiddenFiles(newVal);
-            configDao.save(config);
-
-            cellLocal.refreshTree();
-            if (cellRemote != null) {
-                cellRemote.refreshTree();
-            }
-
-        });
-
         return new ToolBar(
                 hostLabel,
                 hostField,
@@ -360,8 +360,7 @@ public class JFTClient extends Application {
                 passwordField,
                 new Label("  "),
                 button,
-                region,
-                cbxHiddenFiles
+                region
         );
     }
 
