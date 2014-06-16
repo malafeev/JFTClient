@@ -11,20 +11,21 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javafx.application.Platform;
+import javafx.scene.control.TextArea;
 
 /**
  * @author sergei.malafeev
  */
-public class TermOutputWatcher implements Runnable {
-    private static final Logger logger = LoggerFactory.getLogger(TermOutputWatcher.class);
+public class TerminalWatcher implements Runnable {
+    private static final Logger logger = LoggerFactory.getLogger(TerminalWatcher.class);
     private InputStream outFromChannel;
     private ReentrantLock lock;
-    private TerminalPanel terminalPanel;
+    private TextArea textArea;
 
-    public TermOutputWatcher(InputStream outFromChannel, ReentrantLock lock, TerminalPanel terminalPanel) {
+    public TerminalWatcher(InputStream outFromChannel, ReentrantLock lock, TextArea textArea) {
         this.outFromChannel = outFromChannel;
         this.lock = lock;
-        this.terminalPanel = terminalPanel;
+        this.textArea = textArea;
     }
 
     public void run() {
@@ -37,7 +38,7 @@ public class TermOutputWatcher implements Runnable {
 
                 String s = new String(buff, 0, read);
                 if (s.contains(" \r")) {
-                    s = s.replaceAll("\\s\r", "");
+                    //s = s.replaceAll("\\s\r", "");
                 }
 
                 if (lock != null) {
@@ -45,7 +46,7 @@ public class TermOutputWatcher implements Runnable {
                 }
 
                 boolean backspace = false;
-                if (s.contains("\b")) {
+                if (s.contains("\b\u001B[K")) {
                     backspace = true;
                 }
 
@@ -54,11 +55,11 @@ public class TermOutputWatcher implements Runnable {
                 if (!res.isEmpty()) {
                     Platform.runLater(() -> {
                         //logger.info("watcher: '{}'", res);
-                        terminalPanel.getPanel().appendText(res);
+                        textArea.appendText(res);
                     });
                 } else if (backspace) {
                     Platform.runLater(() -> {
-                        terminalPanel.getPanel().deletePreviousChar();
+                        textArea.deletePreviousChar();
                     });
                 }
 

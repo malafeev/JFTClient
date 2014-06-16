@@ -5,17 +5,16 @@ import java.io.PrintStream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
 
 import javafx.event.EventHandler;
 import javafx.scene.control.TextArea;
+import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.text.Font;
 
 /**
  * @author smalafeev
  */
-@Component
 public class TerminalPanel {
     private static final Logger logger = LoggerFactory.getLogger(TerminalPanel.class);
     private TextArea textArea;
@@ -50,7 +49,7 @@ public class TerminalPanel {
                     @Override
                     public void handle(KeyEvent event) {
 
-                        byte[] code = TermUtils.getCode(event, TerminalPanel.this);
+                        byte[] code = TerminalUtils.getCode(event, TerminalPanel.this);
                         if (code != null) {
                             try {
                                 printStream.write(code);
@@ -61,14 +60,18 @@ public class TerminalPanel {
                             printStream.print(event.getText());
                         }
 
-                        //logger.info("panel '{}'", event.getText());
+                        if (event.getCode() == KeyCode.LEFT) {
+                            return;
+                        } else if (event.getCode() == KeyCode.RIGHT) {
+                            return;
+                        }
                         event.consume();
                     }
                 }
         );
     }
 
-    public TextArea getPanel() {
+    public TextArea getTextArea() {
         return textArea;
     }
 }

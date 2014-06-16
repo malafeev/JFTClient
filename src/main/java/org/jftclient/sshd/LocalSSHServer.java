@@ -1,4 +1,4 @@
-package org.jftclient.terminal;
+package org.jftclient.sshd;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -24,8 +24,8 @@ import org.springframework.stereotype.Component;
 @Component
 public class LocalSSHServer {
     private static final Logger logger = LoggerFactory.getLogger(LocalSSHServer.class);
-    private int sshdPort;
-    private SshServer sshServer;
+    private int port;
+    private SshServer server;
     private boolean running;
 
     public void start() {
@@ -33,29 +33,29 @@ public class LocalSSHServer {
             return;
         }
 
-        sshServer = SshServer.setUpDefaultServer();
-        sshdPort = findFreePort();
-        sshServer.setPort(sshdPort);
+        server = SshServer.setUpDefaultServer();
+        port = findFreePort();
+        server.setPort(port);
 
         EnumSet<ProcessShellFactory.TtyOptions> ttyOptions = EnumSet.of(ProcessShellFactory.TtyOptions.ONlCr);
 
         ProcessShellFactory processShellFactory = new ProcessShellFactory(new String[]{"/bin/bash", "-i", "-l"}, ttyOptions);
-        sshServer.setShellFactory(processShellFactory);
+        server.setShellFactory(processShellFactory);
 
         String sshdHostKeyPath = "sshd_host_key.pem";
         KeyPairProvider keyPairProvider = new ResourceKeyPairProvider(new String[]{sshdHostKeyPath}, null, Thread.currentThread().getContextClassLoader());
-        sshServer.setKeyPairProvider(keyPairProvider);
+        server.setKeyPairProvider(keyPairProvider);
 
-        sshServer.setPasswordAuthenticator(new PasswordAuthenticator());
-        sshServer.setPublickeyAuthenticator(null);
+        server.setPasswordAuthenticator(new PasswordAuthenticator());
+        server.setPublickeyAuthenticator(null);
 
         Map<String, String> props = new HashMap<>();
         props.put(SshServer.IDLE_TIMEOUT, Integer.MAX_VALUE + "");
 
-        sshServer.setProperties(props);
+        server.setProperties(props);
 
         try {
-            sshServer.start();
+            server.start();
             running = true;
         } catch (IOException e) {
             logger.error("failed to start ssh server", e);
@@ -64,11 +64,11 @@ public class LocalSSHServer {
 
     @PreDestroy
     public void stop() {
-        if (sshServer == null) {
+        if (server == null) {
             return;
         }
         try {
-            sshServer.stop();
+            server.stop();
         } catch (InterruptedException e) {
             logger.warn("failed to stop sshd", e);
         }
@@ -83,8 +83,8 @@ public class LocalSSHServer {
         }
     }
 
-    public int getSshdPort() {
-        return sshdPort;
+    public int getPort() {
+        return port;
     }
 
     public boolean isRunning() {

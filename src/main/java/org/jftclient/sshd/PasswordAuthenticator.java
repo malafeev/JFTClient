@@ -1,4 +1,4 @@
-package org.jftclient.terminal;
+package org.jftclient.sshd;
 
 import org.apache.sshd.server.session.ServerSession;
 

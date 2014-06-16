@@ -9,8 +9,9 @@ import org.jftclient.config.domain.Config;
 import org.jftclient.config.domain.Host;
 import org.jftclient.ssh.Connection;
 import org.jftclient.ssh.ConnectionState;
-import org.jftclient.terminal.LocalSSHServer;
-import org.jftclient.terminal.TermUtils;
+import org.jftclient.sshd.LocalSSHServer;
+import org.jftclient.terminal.LocalTerminal;
+import org.jftclient.terminal.RemoteTerminal;
 import org.jftclient.terminal.TerminalPanel;
 import org.jftclient.tree.CommonTree;
 import org.jftclient.tree.LocalTree;
@@ -77,8 +78,13 @@ public class JFTClient extends Application {
     private RemoteTree remoteTree;
     private CommonTree commonTree;
     private LocalSSHServer localSSHServer;
-    private TerminalPanel terminalPanel;
+    private TerminalPanel localTerminalPanel = new TerminalPanel();
+    private TerminalPanel remoteTerminalPanel = new TerminalPanel();
     private AnnotationConfigApplicationContext context;
+    private TabPane tabPane;
+    private Tab remoteTerminalTab;
+    private RemoteTerminal remoteTerminal;
+    private LocalTerminal localTerminal;
 
     @Override
     public void start(Stage primaryStage) throws IOException, AWTException {
@@ -99,15 +105,19 @@ public class JFTClient extends Application {
         splitTrees.getItems().addAll(localPane, remotePane);
         splitTrees.setDividerPositions(0.5f);
 
-        TabPane tabPane = new TabPane();
+        tabPane = new TabPane();
         Tab tabOutput = new Tab();
         tabOutput.setText("Output");
         tabOutput.setContent(OutputPanel.getInstance().getScrollPane());
         tabOutput.setClosable(false);
 
         Tab tabTerminal = new Tab("Terminal");
-        tabTerminal.setContent(terminalPanel.getPanel());
+        tabTerminal.setContent(localTerminalPanel.getTextArea());
         tabTerminal.setClosable(false);
+
+        remoteTerminalTab = new Tab("Remote");
+        remoteTerminalTab.setContent(remoteTerminalPanel.getTextArea());
+        remoteTerminalTab.setClosable(false);
 
         tabPane.getTabs().addAll(tabOutput, tabTerminal);
 
@@ -138,17 +148,28 @@ public class JFTClient extends Application {
                     if (localSSHServer.isRunning()) {
                         return;
                     }
-
                     try {
-                        TermUtils.openLocalTerm(localSSHServer, terminalPanel);
-                    } catch (JSchException e) {
-                        e.printStackTrace();
-                    } catch (IOException e) {
-                        e.printStackTrace();
+                        localTerminal.connect();
+                    } catch (JSchException | IOException e) {
+                        logger.warn("failed to open local terminal", e);
                     }
                 }
             }
         });
+
+        remoteTerminalTab.selectedProperty().addListener(new ChangeListener<Boolean>() {
+            @Override
+            public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
+                if (newValue) {
+                    try {
+                        remoteTerminal.connect(connection, remoteTerminalPanel);
+                    } catch (JSchException | IOException e) {
+                        logger.warn("failed to open remote terminal", e);
+                    }
+                }
+            }
+        });
+
 
         primaryStage.show();
     }
@@ -172,7 +193,9 @@ public class JFTClient extends Application {
         remoteTree = context.getBean(RemoteTree.class);
         commonTree = context.getBean(CommonTree.class);
         localSSHServer = context.getBean(LocalSSHServer.class);
-        terminalPanel = context.getBean(TerminalPanel.class);
+        remoteTerminal = context.getBean(RemoteTerminal.class);
+        localTerminal = context.getBean(LocalTerminal.class);
+        localTerminal.setLocalTerminalPanel(localTerminalPanel);
     }
 
     private MenuBar createMenu() {
@@ -213,6 +236,7 @@ public class JFTClient extends Application {
 
     private void connect() {
         connection.disconnect();
+        remoteTerminalPanel.getTextArea().clear();
 
         String host = hostField.getValue();
         if (Strings.isNullOrEmpty(host)) {
@@ -260,6 +284,18 @@ public class JFTClient extends Application {
         });
 
         remotePane.setContent(treeView);
+
+        if (tabPane.getTabs().size() == 2) {
+            tabPane.getTabs().add(remoteTerminalTab);
+        }
+
+        if (remoteTerminalTab.isSelected()) {
+            try {
+                remoteTerminal.connect(connection, remoteTerminalPanel);
+            } catch (JSchException | IOException e) {
+                logger.warn("failed to open remote terminal", e);
+            }
+        }
     }
 
     private ToolBar createToolbar() {

@@ -1,20 +1,7 @@
 package org.jftclient.terminal;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PrintStream;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.locks.ReentrantLock;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.jcraft.jsch.Channel;
-import com.jcraft.jsch.ChannelShell;
-import com.jcraft.jsch.JSch;
-import com.jcraft.jsch.JSchException;
-import com.jcraft.jsch.Session;
 
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
@@ -22,65 +9,14 @@ import javafx.scene.input.KeyEvent;
 /**
  * @author smalafeev
  */
-public class TermUtils {
-    private static Logger logger = LoggerFactory.getLogger(TermUtils.class);
+public class TerminalUtils {
     private static Map<Integer, byte[]> keyMap = new HashMap<>();
-
-    public static void openLocalTerm(LocalSSHServer localSSHServer, TerminalPanel terminalPanel) throws JSchException, IOException {
-
-        if (!localSSHServer.isRunning()) {
-            localSSHServer.start();
-        }
-
-        JSch jsch = new JSch();
-        Session session = jsch.getSession("user", "localhost", localSSHServer.getSshdPort());
-        session.setPassword("");
-        session.setConfig("StrictHostKeyChecking", "no");
-        session.connect(5000);
-        Channel channel = session.openChannel("shell");
-        ((ChannelShell) channel).setPtyType("vt102");
-
-        OutputStream inputToChannel = channel.getOutputStream();
-        PrintStream printStream = new PrintStream(inputToChannel, true);
-
-        terminalPanel.setPrintStream(printStream);
-
-        ReentrantLock lock = new ReentrantLock();
-        Runnable run = new TermOutputWatcher(channel.getExtInputStream(), lock, terminalPanel);
-        Thread thread = new Thread(run);
-        thread.start();
-
-        Runnable run2 = new TermOutputWatcher(channel.getInputStream(), lock, terminalPanel);
-        Thread thread2 = new Thread(run2);
-        thread2.start();
-
-
-        channel.connect();
-
-        /*Terminal terminal = new Terminal();
-        terminal.setHost(host);
-        terminal.setPrintStream(printStream);
-        terminal.setChannel(channel);
-        terminal.setSession(session);
-        terminal.getWatchers().add(thread);
-        terminal.getWatchers().add(thread2);
-        */
-
-        //return terminal;
-    }
-
-
-    public static void openRemoteTerminal() {
-        //TODO
-    }
 
     public static byte[] getCode(KeyEvent event, TerminalPanel terminalPanel) {
         if (event.getCode() == KeyCode.BACK_SPACE) {
             return keyMap.get(72);
-        } else if (event.getCode() == KeyCode.UP) {
-            return keyMap.get(38);
         } else if (event.isControlDown() && event.getCode() == KeyCode.L) {
-            terminalPanel.getPanel().clear();
+            terminalPanel.getTextArea().clear();
             return keyMap.get(76);
         } else if (event.getCode() == KeyCode.SPACE) {
             return new byte[]{0x20};
@@ -88,6 +24,12 @@ public class TermUtils {
             return keyMap.get(9);
         } else if (event.getCode() == KeyCode.ESCAPE) {
             return keyMap.get(27);
+        } else if (event.getCode() == KeyCode.UP) {
+            return keyMap.get(38);
+        } else if (event.getCode() == KeyCode.LEFT) {
+            return keyMap.get(37);
+        } else if (event.getCode() == KeyCode.RIGHT) {
+            return keyMap.get(39);
         }
         return null;
     }

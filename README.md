@@ -2,11 +2,12 @@
 
 JavaFX based ssh client. 
 
-## Key Features:
+## Features:
 
 - copy files/folders by drag and drop
 - rename, delete files/folders
 - create new folders   
+- simple local and remote terminals
 
 ## Screenshots
 
