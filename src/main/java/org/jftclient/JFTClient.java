@@ -28,14 +28,17 @@ import com.jcraft.jsch.JSchException;
 import javafx.application.Application;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.ObservableList;
 import javafx.geometry.Orientation;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckMenuItem;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.ListView;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.SplitPane;
@@ -52,8 +55,10 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 /**
@@ -130,7 +135,6 @@ public class JFTClient extends Application {
         VBox topBox = new VBox();
         topBox.getChildren().addAll(menuBar, toolBar);
 
-
         BorderPane borderPane = new BorderPane();
         borderPane.setTop(topBox);
         borderPane.setCenter(splitHorizontal);
@@ -198,8 +202,15 @@ public class JFTClient extends Application {
     private MenuBar createMenu() {
         MenuBar menuBar = new MenuBar();
 
+        Menu menuEdit = new Menu("Edit");
+        MenuItem editHosts = new MenuItem("Hosts");
+
+        editHosts.setOnAction(event -> createEditHostsDialog());
+
+        menuEdit.getItems().add(editHosts);
+
         Menu menuView = new Menu("View");
-        CheckMenuItem cmShowHiddenFiles = new CheckMenuItem("show hidden files");
+        CheckMenuItem cmShowHiddenFiles = new CheckMenuItem("Show hidden files");
         cmShowHiddenFiles.setSelected(configDao.get().isShowHiddenFiles());
 
         cmShowHiddenFiles.selectedProperty().addListener((observable, oldValue, newValue) -> {
@@ -227,8 +238,62 @@ public class JFTClient extends Application {
 
         menuSettings.getItems().addAll(cmSavePasswords);
 
-        menuBar.getMenus().addAll(menuView, menuSettings);
+        menuBar.getMenus().addAll(menuEdit, menuView, menuSettings);
         return menuBar;
+    }
+
+    private void createEditHostsDialog() {
+        Stage dialog = new Stage();
+        dialog.initModality(Modality.WINDOW_MODAL);
+        dialog.initOwner(primaryStage);
+
+
+        ListView<String> listView = new ListView<>();
+        listView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+
+        listView.setOnKeyPressed(event -> {
+            if (event.getCode() == KeyCode.DELETE) {
+                ObservableList<String> selectedItems = listView.getSelectionModel().getSelectedItems();
+                if (selectedItems.isEmpty()) {
+                    return;
+                }
+                for (String host : selectedItems) {
+                    Host h = hostDao.getHostByName(host);
+                    hostDao.delete(h);
+                }
+                listView.getItems().setAll(hostDao.getHostNames());
+                hostField.getItems().setAll(hostDao.getHostNames());
+            }
+        });
+
+        listView.getItems().addAll(hostDao.getHostNames());
+
+        listView.setCellFactory(param -> new HostCell(hostDao, hostField));
+
+        StackPane root = new StackPane();
+        root.getChildren().add(listView);
+        Scene dialogScene = new Scene(root);
+
+        dialog.setScene(dialogScene);
+
+        dialog.setHeight(150d);
+        dialog.setWidth(300d);
+        dialog.setTitle("Edit Hosts");
+
+        double x = primaryStage.getX() + primaryStage.getWidth() / 2. - dialog.getWidth() / 2;
+        double y = primaryStage.getY() + primaryStage.getHeight() / 2. - dialog.getHeight() / 2;
+
+        dialog.setX(x);
+        dialog.setY(y);
+
+        String os = System.getProperty("os.name").toLowerCase();
+        if (os.contains("mac")) {
+            //TODO: strange hack on OS X
+            dialog.show();
+            dialog.toFront();
+        } else {
+            dialog.showAndWait();
+        }
     }
 
     private TreeView<Node> createLocalTree() {
