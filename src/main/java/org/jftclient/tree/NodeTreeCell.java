@@ -1,9 +1,7 @@
 package org.jftclient.tree;
 
 import java.io.File;
-import java.io.IOException;
 
-import org.apache.commons.io.FileUtils;
 import org.jftclient.JFTText;
 import org.jftclient.OutputPanel;
 import org.jftclient.ssh.Connection;
@@ -24,6 +22,7 @@ import javafx.scene.control.TreeItem;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
@@ -45,21 +44,25 @@ public class NodeTreeCell extends TreeCell<Node> {
     private OutputPanel outputPanel;
     private Image currentImage;
     private Tree tree;
+    private CommonTree commonTree;
 
-    public NodeTreeCell(Stage primaryStage, Connection connection, Tree tree) {
+    public NodeTreeCell(Stage primaryStage, Connection connection, Tree tree, CommonTree commonTree) {
         this.connection = connection;
         this.outputPanel = OutputPanel.getInstance();
         this.tree = tree;
+        this.commonTree = commonTree;
 
         MenuItem refreshMenu = new MenuItem("Refresh");
         refreshMenu.setOnAction((ActionEvent event) -> {
             refreshItem();
         });
+        refreshMenu.setAccelerator(new KeyCodeCombination(KeyCode.F5));
 
         MenuItem deleteMenu = new MenuItem("Delete");
         deleteMenu.setOnAction((ActionEvent event) -> {
             deleteItems();
         });
+        deleteMenu.setAccelerator(new KeyCodeCombination(KeyCode.DELETE));
 
         MenuItem newFolderMenu = new MenuItem("New Folder");
         newFolderMenu.setOnAction((ActionEvent event) -> {
@@ -71,7 +74,7 @@ public class NodeTreeCell extends TreeCell<Node> {
             createRenameDialog(primaryStage);
         });
 
-        contextFolderMenu.getItems().addAll(refreshMenu, deleteMenu, renameMenu, newFolderMenu);
+        contextFolderMenu.getItems().addAll(newFolderMenu, refreshMenu, deleteMenu, renameMenu);
         contextFileMenu.getItems().addAll(refreshMenu, deleteMenu, renameMenu);
     }
 
@@ -250,41 +253,7 @@ public class NodeTreeCell extends TreeCell<Node> {
     }
 
     private void deleteItems() {
-        getTreeView().getSelectionModel().clearSelection();
-
-        TreeItem<Node> parent = getTreeItem().getParent();
-
-        if (tree.isLocal()) {
-            File src = new File(getItem().getPath());
-            if (src.isFile()) {
-                if (!src.delete()) {
-                    logger.warn("cannot delete file {}", src.getAbsolutePath());
-                    outputPanel.println(JFTText.getLocalHost(), JFTText.textBlack("rm " +
-                            src.getAbsolutePath() + " "), JFTText.failed());
-
-                } else {
-                    outputPanel.println(JFTText.getLocalHost(), JFTText.textBlack("rm " +
-                            src.getAbsolutePath()));
-                }
-            } else {
-                try {
-                    FileUtils.deleteDirectory(src);
-                    outputPanel.println(JFTText.getLocalHost(), JFTText.textBlack("rm " +
-                            src.getAbsolutePath()));
-                } catch (IOException e) {
-                    logger.warn("failed to remove dir", e);
-                    outputPanel.println(JFTText.getLocalHost(), JFTText.textBlack("rm " +
-                            src.getAbsolutePath() + " "), JFTText.failed());
-                }
-            }
-
-            parent.getChildren().setAll(tree.buildChildren(parent));
-        } else {
-            connection.rm(getItem().getPath());
-            parent.getChildren().setAll(tree.buildChildren(parent));
-        }
-
-        getTreeView().getSelectionModel().select(parent);
+        commonTree.deleteSelectedItems(getTreeView(), tree);
     }
 
     @Override
@@ -333,9 +302,7 @@ public class NodeTreeCell extends TreeCell<Node> {
     }
 
     private void refreshItem() {
-        getTreeView().getSelectionModel().clearSelection();
-        getTreeItem().getChildren().setAll(tree.buildChildren(getTreeItem()));
-        getTreeView().getSelectionModel().select(getTreeItem());
+        commonTree.refresh(getTreeView(), tree);
     }
 
     public Image getCurrentImage() {

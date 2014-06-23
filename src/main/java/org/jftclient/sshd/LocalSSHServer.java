@@ -69,6 +69,7 @@ public class LocalSSHServer {
         }
         try {
             server.stop();
+            running = false;
         } catch (InterruptedException e) {
             logger.warn("failed to stop sshd", e);
         }

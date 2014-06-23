@@ -26,8 +26,6 @@ import com.google.common.base.Strings;
 import com.jcraft.jsch.JSchException;
 
 import javafx.application.Application;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
 import javafx.geometry.Orientation;
 import javafx.scene.Scene;
@@ -143,31 +141,25 @@ public class JFTClient extends Application {
         primaryStage.setScene(scene);
         primaryStage.getIcons().add(new Image("java.png"));
 
-        tabTerminal.selectedProperty().addListener(new ChangeListener<Boolean>() {
-            @Override
-            public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
-                if (newValue) {
-                    if (localSSHServer.isRunning()) {
-                        return;
-                    }
-                    try {
-                        localTerminal.connect();
-                    } catch (JSchException | IOException e) {
-                        logger.warn("failed to open local terminal", e);
-                    }
+        tabTerminal.selectedProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue) {
+                if (localSSHServer.isRunning()) {
+                    return;
+                }
+                try {
+                    localTerminal.connect();
+                } catch (JSchException | IOException e) {
+                    logger.warn("failed to open local terminal", e);
                 }
             }
         });
 
-        remoteTerminalTab.selectedProperty().addListener(new ChangeListener<Boolean>() {
-            @Override
-            public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
-                if (newValue) {
-                    try {
-                        remoteTerminal.connect(connection, remoteTerminalPanel);
-                    } catch (JSchException | IOException e) {
-                        logger.warn("failed to open remote terminal", e);
-                    }
+        remoteTerminalTab.selectedProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue) {
+                try {
+                    remoteTerminal.connect(connection, remoteTerminalPanel);
+                } catch (JSchException | IOException e) {
+                    logger.warn("failed to open remote terminal", e);
                 }
             }
         });
@@ -306,9 +298,17 @@ public class JFTClient extends Application {
         treeView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 
         treeView.setCellFactory(param -> {
-            cellLocal = new NodeTreeCell(primaryStage, connection, localTree);
+            cellLocal = new NodeTreeCell(primaryStage, connection, localTree, commonTree);
             commonTree.setDragDropEvent(cellLocal, localTree);
             return cellLocal;
+        });
+
+        treeView.setOnKeyPressed(event -> {
+            if (event.getCode() == KeyCode.DELETE) {
+                commonTree.deleteSelectedItems(treeView, localTree);
+            } else if (event.getCode() == KeyCode.F5) {
+                commonTree.refresh(treeView, localTree);
+            }
         });
 
         return treeView;
@@ -356,11 +356,20 @@ public class JFTClient extends Application {
         TreeItem<Node> root = remoteTree.createRootNote();
         root.setExpanded(true);
         TreeView<Node> treeView = new TreeView<>(root);
+        treeView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 
         treeView.setCellFactory(param -> {
-            cellRemote = new NodeTreeCell(primaryStage, connection, remoteTree);
+            cellRemote = new NodeTreeCell(primaryStage, connection, remoteTree, commonTree);
             commonTree.setDragDropEvent(cellRemote, localTree);
             return cellRemote;
+        });
+
+        treeView.setOnKeyPressed(event -> {
+            if (event.getCode() == KeyCode.DELETE) {
+                commonTree.deleteSelectedItems(treeView, remoteTree);
+            } else if (event.getCode() == KeyCode.F5) {
+                commonTree.refresh(treeView, remoteTree);
+            }
         });
 
         remotePane.setContent(treeView);

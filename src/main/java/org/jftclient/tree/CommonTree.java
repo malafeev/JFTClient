@@ -1,14 +1,18 @@
 package org.jftclient.tree;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import javax.annotation.PreDestroy;
 
+import org.apache.commons.io.FileUtils;
 import org.jftclient.JFTText;
 import org.jftclient.LocalFileUtils;
 import org.jftclient.OutputPanel;
@@ -16,11 +20,14 @@ import org.jftclient.command.CommandCopy;
 import org.jftclient.command.CommandCopyExecution;
 import org.jftclient.command.CommandCopyFactory;
 import org.jftclient.ssh.Connection;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javafx.collections.ObservableList;
 import javafx.scene.control.TreeItem;
+import javafx.scene.control.TreeView;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.DataFormat;
 import javafx.scene.input.Dragboard;
@@ -31,10 +38,77 @@ import javafx.scene.input.TransferMode;
  */
 @Component
 public class CommonTree {
+    private static final Logger logger = LoggerFactory.getLogger(CommonTree.class);
     private static DataFormat dataFormat = new DataFormat("tree");
     @Autowired
     private Connection connection;
     private ExecutorService executorService = Executors.newCachedThreadPool();
+    private OutputPanel outputPanel = OutputPanel.getInstance();
+
+    public void refresh(TreeView<Node> treeView, Tree tree) {
+        List<TreeItem<Node>> items = new ArrayList<>(treeView.getSelectionModel().getSelectedItems());
+        if (items.isEmpty() || items.size() > 1) {
+            return;
+        }
+
+        treeView.getSelectionModel().clearSelection();
+        items.get(0).getChildren().setAll(tree.buildChildren(items.get(0)));
+        treeView.getSelectionModel().select(items.get(0));
+    }
+
+    public void deleteSelectedItems(TreeView<Node> treeView, Tree tree) {
+        List<TreeItem<Node>> items = new ArrayList<>(treeView.getSelectionModel().getSelectedItems());
+        if (items.isEmpty()) {
+            return;
+        }
+
+        treeView.getSelectionModel().clearSelection();
+
+        TreeItem<Node> parent = null;
+
+        Map<String, TreeItem<Node>> reducedItems = reduceByPaths(items);
+
+        for (Map.Entry<String, TreeItem<Node>> item : reducedItems.entrySet()) {
+            if (item.getValue().getParent() != null) {
+                if (parent == null) {
+                    parent = item.getValue().getParent();
+                } else {
+                    if (item.getValue().getParent().getValue().isParentOf(parent.getValue())) {
+                        parent = item.getValue().getParent();
+                    }
+                }
+            }
+            if (tree.isLocal()) {
+                File src = new File(item.getKey());
+                if (src.isFile()) {
+                    if (!src.delete()) {
+                        logger.warn("cannot delete file {}", src.getAbsolutePath());
+                        outputPanel.println(JFTText.getLocalHost(), JFTText.textBlack("rm " +
+                                src.getAbsolutePath() + " "), JFTText.failed());
+
+                    } else {
+                        outputPanel.println(JFTText.getLocalHost(), JFTText.textBlack("rm " +
+                                src.getAbsolutePath()));
+                    }
+                } else {
+                    try {
+                        FileUtils.deleteDirectory(src);
+                        outputPanel.println(JFTText.getLocalHost(), JFTText.textBlack("rm -rf " +
+                                src.getAbsolutePath()));
+                    } catch (IOException e) {
+                        logger.warn("failed to remove dir", e);
+                        outputPanel.println(JFTText.getLocalHost(), JFTText.textBlack("rm -rf " +
+                                src.getAbsolutePath() + " "), JFTText.failed());
+                    }
+                }
+            } else {
+                connection.rm(item.getKey());
+            }
+        }
+        if (parent != null) {
+            parent.getChildren().setAll(tree.buildChildren(parent));
+        }
+    }
 
     public void setDragDropEvent(NodeTreeCell cell, LocalTree localTree) {
         //Source:
@@ -91,7 +165,9 @@ public class CommonTree {
             NodeTreeCell source = (NodeTreeCell) event.getGestureSource();
             NodeTreeCell target = (NodeTreeCell) event.getGestureTarget();
 
+            @SuppressWarnings({"unchecked"})
             List<Node> files = (List<Node>) db.getContent(dataFormat);
+
             String targetPath = cell.getItem().getPath();
 
             OutputPanel outputPanel = OutputPanel.getInstance();
@@ -163,6 +239,32 @@ public class CommonTree {
 
         CommandCopyFactory commandCopyFactory = new CommandCopyFactory(connection);
         return commandCopyFactory.buildCommands(isSourceLocal, isTargetLocal, targetPath, sources);
+    }
+
+    private Map<String, TreeItem<Node>> reduceByPaths(List<TreeItem<Node>> items) {
+        Map<String, TreeItem<Node>> map = new TreeMap<>();
+        for (TreeItem<Node> item : items) {
+            map.put(item.getValue().getPath(), item);
+        }
+        Map<String, TreeItem<Node>> found = new TreeMap<>();
+        for (Map.Entry<String, TreeItem<Node>> path : map.entrySet()) {
+            if (found.isEmpty()) {
+                found.put(path.getKey(), path.getValue());
+            } else {
+                boolean add = true;
+                for (String foundPath : found.keySet()) {
+                    if (path.getKey().startsWith(foundPath)) {
+                        add = false;
+                        break;
+                    }
+                }
+                if (add) {
+                    found.put(path.getKey(), path.getValue());
+                }
+            }
+        }
+
+        return found;
     }
 
     @PreDestroy

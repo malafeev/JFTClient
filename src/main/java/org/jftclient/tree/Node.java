@@ -38,6 +38,14 @@ public class Node implements Comparable<Node>, Serializable {
         }
     }
 
+    public boolean isParentOf(Node node) {
+        if (node.getPath().startsWith(path) && !node.getPath().equals(path)) {
+            return true;
+        }
+        return false;
+    }
+
+
     public String getName() {
         if (linkDest == null) {
             return name;
