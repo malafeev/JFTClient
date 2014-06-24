@@ -1,6 +1,5 @@
 package org.jftclient.terminal;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -30,16 +29,11 @@ public class TerminalWatcher implements Runnable {
 
     public void run() {
         InputStreamReader isr = new InputStreamReader(outFromChannel);
-        BufferedReader br = new BufferedReader(isr);
         try {
             char[] buff = new char[1024];
             int read;
-            while ((read = br.read(buff)) != -1) {
-
+            while ((read = isr.read(buff)) != -1) {
                 String s = new String(buff, 0, read);
-                if (s.contains(" \r")) {
-                    //s = s.replaceAll("\\s\r", "");
-                }
 
                 if (lock != null) {
                     lock.lock();
@@ -54,7 +48,6 @@ public class TerminalWatcher implements Runnable {
 
                 if (!res.isEmpty()) {
                     Platform.runLater(() -> {
-                        //logger.info("watcher: '{}'", res);
                         textArea.appendText(res);
                     });
                 } else if (backspace) {
