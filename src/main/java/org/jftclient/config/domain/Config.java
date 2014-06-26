@@ -4,7 +4,7 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 
 /**
- * @author smalafeev
+ * @author sergei.malafeev
  */
 @Entity
 public class Config {

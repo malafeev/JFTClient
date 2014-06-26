@@ -1,7 +1,7 @@
 package org.jftclient.ssh;
 
 /**
- * @author smalafeev
+ * @author sergei.malafeev
  */
 
 public class ConnectionState {

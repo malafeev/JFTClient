@@ -15,7 +15,7 @@ import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 
 /**
- * @author smalafeev
+ * @author sergei.malafeev
  */
 @Component
 public class LocalTerminal {

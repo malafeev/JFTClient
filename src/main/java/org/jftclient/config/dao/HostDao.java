@@ -8,7 +8,7 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 
 /**
- * @author smalafeev
+ * @author sergei.malafeev
  */
 public interface HostDao extends CrudRepository<Host, Long> {
 

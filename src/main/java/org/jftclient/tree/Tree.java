@@ -4,7 +4,7 @@ import javafx.collections.ObservableList;
 import javafx.scene.control.TreeItem;
 
 /**
- * @author smalafeev
+ * @author sergei.malafeev
  */
 public interface Tree {
     boolean isLocal();

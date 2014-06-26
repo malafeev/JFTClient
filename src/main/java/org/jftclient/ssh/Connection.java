@@ -36,7 +36,7 @@ import javafx.scene.text.Text;
 
 
 /**
- * @author smalafeev
+ * @author sergei.malafeev
  */
 @Component
 public class Connection {
@@ -181,20 +181,17 @@ public class Connection {
         final boolean showHiddenFiles = configDao.get().isShowHiddenFiles();
 
         try {
-            sftpChannel.ls(path, new ChannelSftp.LsEntrySelector() {
-                @Override
-                public int select(ChannelSftp.LsEntry entry) {
-                    if (!showHiddenFiles) {
-                        if (entry.getFilename().startsWith(".")) {
-                            return ChannelSftp.LsEntrySelector.CONTINUE;
-                        }
-                    } else if (entry.getFilename().equals(".")
-                            || entry.getFilename().equals("..")) {
+            sftpChannel.ls(path, entry -> {
+                if (!showHiddenFiles) {
+                    if (entry.getFilename().startsWith(".")) {
                         return ChannelSftp.LsEntrySelector.CONTINUE;
                     }
-                    files.add(entry);
+                } else if (entry.getFilename().equals(".")
+                        || entry.getFilename().equals("..")) {
                     return ChannelSftp.LsEntrySelector.CONTINUE;
                 }
+                files.add(entry);
+                return ChannelSftp.LsEntrySelector.CONTINUE;
             });
         } catch (SftpException e) {
             // ignore exception. usually happens because of permission denied

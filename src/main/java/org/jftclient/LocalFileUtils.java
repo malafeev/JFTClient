@@ -8,10 +8,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * @author smalafeev
+ * @author sergei.malafeev
  */
 public class LocalFileUtils {
     private static final Logger logger = LoggerFactory.getLogger(LocalFileUtils.class);
+
+    private LocalFileUtils() {
+    }
 
     /**
      * Copy file to directory<br/>

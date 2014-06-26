@@ -60,7 +60,7 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 /**
- * @author smalafeev
+ * @author sergei.malafeev
  */
 public class JFTClient extends Application {
     private static final Logger logger = LoggerFactory.getLogger(JFTClient.class);
@@ -95,16 +95,16 @@ public class JFTClient extends Application {
         initSpring();
 
         TitledPane localPane = new TitledPane("Local", createLocalTree());
-        localPane.setPrefHeight(1000f);
+        localPane.setPrefHeight(1000d);
         localPane.setCollapsible(false);
 
         remotePane.setText("Remote");
-        remotePane.setPrefHeight(1000f);
+        remotePane.setPrefHeight(1000d);
         remotePane.setCollapsible(false);
 
         SplitPane splitTrees = new SplitPane();
         splitTrees.getItems().addAll(localPane, remotePane);
-        splitTrees.setDividerPositions(0.5f);
+        splitTrees.setDividerPositions(0.5);
 
         tabPane = new TabPane();
         Tab tabOutput = new Tab();
@@ -124,7 +124,7 @@ public class JFTClient extends Application {
 
         SplitPane splitHorizontal = new SplitPane();
         splitHorizontal.getItems().addAll(splitTrees, tabPane);
-        splitHorizontal.setDividerPositions(0.7f);
+        splitHorizontal.setDividerPositions(0.7);
         splitHorizontal.setOrientation(Orientation.VERTICAL);
 
         MenuBar menuBar = createMenu();
@@ -137,7 +137,7 @@ public class JFTClient extends Application {
         borderPane.setTop(topBox);
         borderPane.setCenter(splitHorizontal);
 
-        Scene scene = new Scene(borderPane, 950, 700, Color.WHITE);
+        Scene scene = new Scene(borderPane, 950d, 700d, Color.WHITE);
         primaryStage.setScene(scene);
         primaryStage.getIcons().add(new Image("java.png"));
 
@@ -272,8 +272,8 @@ public class JFTClient extends Application {
         dialog.setWidth(300d);
         dialog.setTitle("Edit Hosts");
 
-        double x = primaryStage.getX() + primaryStage.getWidth() / 2. - dialog.getWidth() / 2;
-        double y = primaryStage.getY() + primaryStage.getHeight() / 2. - dialog.getHeight() / 2;
+        double x = primaryStage.getX() + primaryStage.getWidth() / 2. - dialog.getWidth() / 2.;
+        double y = primaryStage.getY() + primaryStage.getHeight() / 2. - dialog.getHeight() / 2.;
 
         dialog.setX(x);
         dialog.setY(y);
@@ -395,7 +395,7 @@ public class JFTClient extends Application {
         userField.setText(System.getProperty("user.name"));
 
         hostField.setEditable(true);
-        hostField.setPrefWidth(200.0);
+        hostField.setPrefWidth(200d);
 
         hostField.getItems().addAll(hostDao.getHostNames());
 

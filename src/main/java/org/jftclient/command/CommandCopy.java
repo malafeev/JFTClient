@@ -6,7 +6,7 @@ import java.util.List;
 import com.google.common.base.Strings;
 
 /**
- * @author smalafeev
+ * @author sergei.malafeev
  */
 public class CommandCopy {
     private List<String> args = new ArrayList<>();

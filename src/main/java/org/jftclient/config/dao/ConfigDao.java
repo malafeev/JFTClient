@@ -5,7 +5,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 
 /**
- * @author smalafeev
+ * @author sergei.malafeev
  */
 public interface ConfigDao extends CrudRepository<Config, Long> {
 

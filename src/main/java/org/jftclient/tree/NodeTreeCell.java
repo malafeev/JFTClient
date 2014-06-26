@@ -5,11 +5,8 @@ import java.io.File;
 import org.jftclient.JFTText;
 import org.jftclient.OutputPanel;
 import org.jftclient.ssh.Connection;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -23,7 +20,6 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
-import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
@@ -33,7 +29,6 @@ import javafx.stage.Stage;
 
 
 public class NodeTreeCell extends TreeCell<Node> {
-    private static final Logger logger = LoggerFactory.getLogger(NodeTreeCell.class);
     private static final Image FOLDER_COLLAPSE_IMAGE = new Image(ClassLoader.getSystemResourceAsStream("folder.png"));
     private static final Image FOLDER_EXPAND_IMAGE = new Image(ClassLoader.getSystemResourceAsStream("folder-open.png"));
     private static final Image FILE_IMAGE = new Image(ClassLoader.getSystemResourceAsStream("file.png"));
@@ -53,26 +48,18 @@ public class NodeTreeCell extends TreeCell<Node> {
         this.commonTree = commonTree;
 
         MenuItem refreshMenu = new MenuItem("Refresh");
-        refreshMenu.setOnAction((ActionEvent event) -> {
-            refreshItem();
-        });
+        refreshMenu.setOnAction((ActionEvent event) -> refreshItem());
         refreshMenu.setAccelerator(new KeyCodeCombination(KeyCode.F5));
 
         MenuItem deleteMenu = new MenuItem("Delete");
-        deleteMenu.setOnAction((ActionEvent event) -> {
-            deleteItems();
-        });
+        deleteMenu.setOnAction((ActionEvent event) -> deleteItems());
         deleteMenu.setAccelerator(new KeyCodeCombination(KeyCode.DELETE));
 
         MenuItem newFolderMenu = new MenuItem("New Folder");
-        newFolderMenu.setOnAction((ActionEvent event) -> {
-            createNewFolderDialog(primaryStage);
-        });
+        newFolderMenu.setOnAction((ActionEvent event) -> createNewFolderDialog(primaryStage));
 
         MenuItem renameMenu = new MenuItem("Rename");
-        renameMenu.setOnAction((ActionEvent event) -> {
-            createRenameDialog(primaryStage);
-        });
+        renameMenu.setOnAction((ActionEvent event) -> createRenameDialog(primaryStage));
 
         contextFolderMenu.getItems().addAll(newFolderMenu, refreshMenu, deleteMenu, renameMenu);
         contextFileMenu.getItems().addAll(refreshMenu, deleteMenu, renameMenu);
@@ -84,13 +71,13 @@ public class NodeTreeCell extends TreeCell<Node> {
         dialog.initOwner(primaryStage);
 
         VBox vbox = new VBox();
-        vbox.setPadding(new Insets(10));
-        vbox.setSpacing(8);
+        vbox.setPadding(new Insets(10d));
+        vbox.setSpacing(8d);
         Button btnOk = new Button("OK");
         Button btnCancel = new Button("Cancel");
         HBox hbox = new HBox();
-        hbox.setPadding(new Insets(10, 10, 10, 10));
-        hbox.setSpacing(10);
+        hbox.setPadding(new Insets(10d, 10d, 10d, 10d));
+        hbox.setSpacing(10d);
         hbox.setAlignment(Pos.CENTER);
         btnOk.setPrefWidth(80d);
         btnCancel.setPrefWidth(80d);
@@ -106,20 +93,18 @@ public class NodeTreeCell extends TreeCell<Node> {
         dialog.setWidth(300d);
         dialog.setTitle("Rename");
 
-        double x = primaryStage.getX() + primaryStage.getWidth() / 2. - dialog.getWidth() / 2;
-        double y = primaryStage.getY() + primaryStage.getHeight() / 2. - dialog.getHeight() / 2;
+        double x = primaryStage.getX() + primaryStage.getWidth() / 2. - dialog.getWidth() / 2.;
+        double y = primaryStage.getY() + primaryStage.getHeight() / 2. - dialog.getHeight() / 2.;
 
         dialog.setX(x);
         dialog.setY(y);
 
-        itemField.setOnKeyPressed(new EventHandler<KeyEvent>() {
-            @Override
-            public void handle(KeyEvent event) {
-                if (event.getCode() == KeyCode.ENTER) {
-                    renameItem(itemField.getText().trim(), dialog);
-                }
+        itemField.setOnKeyPressed(event -> {
+            if (event.getCode() == KeyCode.ENTER) {
+                renameItem(itemField.getText().trim(), dialog);
             }
         });
+
         btnOk.setOnAction(event1 -> {
             renameItem(itemField.getText().trim(), dialog);
         });
@@ -142,13 +127,13 @@ public class NodeTreeCell extends TreeCell<Node> {
         dialog.initOwner(primaryStage);
 
         VBox vbox = new VBox();
-        vbox.setPadding(new Insets(10));
-        vbox.setSpacing(8);
+        vbox.setPadding(new Insets(10d));
+        vbox.setSpacing(8d);
         Button btnOk = new Button("OK");
         Button btnCancel = new Button("Cancel");
         HBox hbox = new HBox();
-        hbox.setPadding(new Insets(10, 10, 10, 10));
-        hbox.setSpacing(10);
+        hbox.setPadding(new Insets(10d, 10d, 10d, 10d));
+        hbox.setSpacing(10d);
         hbox.setAlignment(Pos.CENTER);
         btnOk.setPrefWidth(80d);
         btnCancel.setPrefWidth(80d);
@@ -164,8 +149,8 @@ public class NodeTreeCell extends TreeCell<Node> {
         dialog.setWidth(300d);
         dialog.setTitle("New Folder");
 
-        double x = primaryStage.getX() + primaryStage.getWidth() / 2. - dialog.getWidth() / 2;
-        double y = primaryStage.getY() + primaryStage.getHeight() / 2. - dialog.getHeight() / 2;
+        double x = primaryStage.getX() + primaryStage.getWidth() / 2. - dialog.getWidth() / 2.;
+        double y = primaryStage.getY() + primaryStage.getHeight() / 2. - dialog.getHeight() / 2.;
 
         dialog.setX(x);
         dialog.setY(y);

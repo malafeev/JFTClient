@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory;
 import com.google.common.base.Strings;
 
 /**
- * @author smalafeev
+ * @author sergei.malafeev
  */
 public class CommandCopyFactory {
     private Connection connection;

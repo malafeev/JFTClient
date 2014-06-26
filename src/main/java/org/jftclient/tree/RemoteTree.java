@@ -11,7 +11,7 @@ import javafx.collections.ObservableList;
 import javafx.scene.control.TreeItem;
 
 /**
- * @author smalafeev
+ * @author sergei.malafeev
  */
 @Component
 public class RemoteTree implements Tree {

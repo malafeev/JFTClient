@@ -51,9 +51,7 @@ public class TerminalWatcher implements Runnable {
                         textArea.appendText(res);
                     });
                 } else if (backspace) {
-                    Platform.runLater(() -> {
-                        textArea.deletePreviousChar();
-                    });
+                    Platform.runLater(textArea::deletePreviousChar);
                 }
 
                 if (lock != null) {

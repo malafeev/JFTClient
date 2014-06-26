@@ -19,7 +19,7 @@ import org.springframework.stereotype.Component;
 /**
  * Singleton
  *
- * @author smalafeev
+ * @author sergei.malafeev
  */
 @Component
 public class LocalSSHServer {
@@ -90,9 +90,5 @@ public class LocalSSHServer {
 
     public boolean isRunning() {
         return running;
-    }
-
-    public void setRunning(boolean running) {
-        this.running = running;
     }
 }

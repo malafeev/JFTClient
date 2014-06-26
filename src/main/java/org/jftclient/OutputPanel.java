@@ -8,7 +8,7 @@ import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 
 /**
- * @author smalafeev
+ * @author sergei.malafeev
  */
 public class OutputPanel {
     private static final OutputPanel instance = new OutputPanel();
@@ -50,27 +50,19 @@ public class OutputPanel {
     }
 
     public void printOutputLater(Text... text) {
-        Platform.runLater(() -> {
-            print(text);
-        });
+        Platform.runLater(() -> print(text));
     }
 
     public void printlnOutputLater(Text... text) {
-        Platform.runLater(() -> {
-            println(text);
-        });
+        Platform.runLater(() -> println(text));
     }
 
     public void printlnOutputLater(List<Text> out) {
-        Platform.runLater(() -> {
-            println(out.toArray(new Text[out.size()]));
-        });
+        Platform.runLater(() -> println(out.toArray(new Text[out.size()])));
     }
 
     public void printOutputLater(List<Text> out) {
-        Platform.runLater(() -> {
-            print(out.toArray(new Text[out.size()]));
-        });
+        Platform.runLater(() -> print(out.toArray(new Text[out.size()])));
     }
 
     public ScrollPane getScrollPane() {

@@ -7,10 +7,10 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 
 /**
- * @author smalafeev
+ * @author sergei.malafeev
  */
 public class TerminalUtils {
-    private static Map<Integer, byte[]> keyMap = new HashMap<>();
+    private static Map<Integer, byte[]> keyMap;
 
     public static byte[] getCode(KeyEvent event, TerminalPanel terminalPanel) {
         if (event.getCode() == KeyCode.BACK_SPACE) {
@@ -35,6 +35,7 @@ public class TerminalUtils {
     }
 
     static {
+        keyMap = new HashMap<>();
         //ESC
         keyMap.put(27, new byte[]{(byte) 0x1b});
         //ENTER

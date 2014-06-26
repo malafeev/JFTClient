@@ -2,7 +2,6 @@ package org.jftclient.tree;
 
 import java.io.File;
 import java.util.Collections;
-import java.util.Comparator;
 
 import org.jftclient.config.dao.ConfigDao;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +12,7 @@ import javafx.collections.ObservableList;
 import javafx.scene.control.TreeItem;
 
 /**
- * @author smalafeev
+ * @author sergei.malafeev
  */
 @Component
 public class LocalTree implements Tree {
@@ -69,12 +68,7 @@ public class LocalTree implements Tree {
                     }
                     children.add(createNode(new Node(childFile)));
                 }
-                Collections.sort(children, new Comparator<TreeItem<Node>>() {
-                    @Override
-                    public int compare(TreeItem<Node> o1, TreeItem<Node> o2) {
-                        return o1.getValue().compareTo(o2.getValue());
-                    }
-                });
+                Collections.sort(children, (o1, o2) -> o1.getValue().compareTo(o2.getValue()));
 
                 return children;
             }

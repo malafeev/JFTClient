@@ -19,7 +19,7 @@ import javafx.scene.text.Text;
 import static org.jftclient.JFTText.getLocalHost;
 
 /**
- * @author smalafeev
+ * @author sergei.malafeev
  */
 public class CommandCopyExecution implements Callable<Boolean> {
     private static final Logger logger = LoggerFactory.getLogger(CommandCopyExecution.class);

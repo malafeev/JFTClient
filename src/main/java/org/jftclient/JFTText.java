@@ -4,7 +4,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 
 /**
- * @author smalafeev
+ * @author sergei.malafeev
  */
 public class JFTText {
     private static final String DONE = " DONE";

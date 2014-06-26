@@ -8,7 +8,7 @@ import org.apache.sshd.server.session.ServerSession;
 public class PasswordAuthenticator implements org.apache.sshd.server.PasswordAuthenticator {
 
     @Override
-    public boolean authenticate(String username, String password, ServerSession arg2) {
+    public boolean authenticate(String username, String password, ServerSession serverSession) {
         return true;
     }
 }

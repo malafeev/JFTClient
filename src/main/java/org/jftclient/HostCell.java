@@ -9,7 +9,7 @@ import javafx.scene.control.ListCell;
 import javafx.scene.control.MenuItem;
 
 /**
- * @author smalafeev
+ * @author sergei.malafeev
  */
 public class HostCell extends ListCell<String> {
     private ContextMenu contextMenu;

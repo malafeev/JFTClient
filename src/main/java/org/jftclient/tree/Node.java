@@ -9,7 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * @author smalafeev
+ * @author sergei.malafeev
  */
 public class Node implements Comparable<Node>, Serializable {
     private static final Logger logger = LoggerFactory.getLogger(Node.class);

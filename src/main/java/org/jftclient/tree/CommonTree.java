@@ -34,7 +34,7 @@ import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
 
 /**
- * @author smalafeev
+ * @author sergei.malafeev
  */
 @Component
 public class CommonTree {

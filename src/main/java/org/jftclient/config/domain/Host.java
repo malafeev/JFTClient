@@ -6,7 +6,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
 /**
- * @author smalafeev
+ * @author sergei.malafeev
  */
 @Entity
 public class Host implements Comparable<Host> {
