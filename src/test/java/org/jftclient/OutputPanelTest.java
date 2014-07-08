@@ -12,7 +12,8 @@ import static org.testng.Assert.assertSame;
 public class OutputPanelTest {
 
     @BeforeClass
-    public void setUp() {
+    public void beforeAllTests() {
+        //required to init JavaFX
         JFXPanel fxPanel = new JFXPanel();
     }
 

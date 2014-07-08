@@ -46,7 +46,6 @@ public class LocalTerminal {
         Runnable run = new TerminalWatcher(is, localTerminalPanel.getTextArea());
         thread = new Thread(run);
         thread.start();
-
     }
 
     @PreDestroy
