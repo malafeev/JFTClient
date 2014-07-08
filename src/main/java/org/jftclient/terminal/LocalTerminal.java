@@ -30,7 +30,7 @@ public class LocalTerminal {
             return;
         }
 
-        String[] cmd = {"/bin/sh", "-l", "-i"};
+        String[] cmd = {"/bin/bash", "-i"};
         Map<String, String> envs = new HashMap<>(System.getenv());
         envs.remove("TERM_PROGRAM"); // for OS X
         envs.put("TERM", "xterm-256color");
