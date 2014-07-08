@@ -21,6 +21,9 @@ sourceCompatibility = "1.8"
 repositories {
     mavenLocal()
     mavenCentral()
+    flatDir {
+        dirs 'lib'
+    }
 }
 
 configurations {
@@ -28,14 +31,19 @@ configurations {
 }
 
 dependencies {
+    compile name: 'pty4j-0.3'
+    compile name: 'jna'
+    compile name: 'jna-utils'
+    compile name: 'purejavacomm'
+
+
     compile 'commons-io:commons-io:2.4'
 
     compile 'ch.qos.logback:logback-classic:1.1.2'
-    compile 'org.slf4j:jcl-over-slf4j:1.7.6'
+    compile 'org.slf4j:jcl-over-slf4j:1.7.7'
+    compile 'org.slf4j:log4j-over-slf4j:1.7.7'
 
     compile 'com.jcraft:jsch:0.1.51'
-    compile 'org.apache.sshd:sshd-core:0.11.0'
-    compile 'org.bouncycastle:bcpkix-jdk15on:1.50'
 
     compile 'com.google.guava:guava:17.0'
 
@@ -61,11 +69,21 @@ test {
     }
 }
 
+task copyFiles(type: Copy) {
+    from "lib/libpty"
+    into "build/install/$applicationName/lib/"
+    //include('**/*')
+}
+
 distZip {
     into("$applicationName-$version") {
         from 'README'
         from 'LICENSE'
     }
+}
+
+applicationDistribution.from("lib/libpty") {
+    into "lib/libpty"
 }
 
 task install {

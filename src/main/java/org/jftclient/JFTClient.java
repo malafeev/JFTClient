@@ -9,7 +9,6 @@ import org.jftclient.config.domain.Config;
 import org.jftclient.config.domain.Host;
 import org.jftclient.ssh.Connection;
 import org.jftclient.ssh.ConnectionState;
-import org.jftclient.sshd.LocalSSHServer;
 import org.jftclient.terminal.LocalTerminal;
 import org.jftclient.terminal.RemoteTerminal;
 import org.jftclient.terminal.TerminalPanel;
@@ -78,7 +77,6 @@ public class JFTClient extends Application {
     private LocalTree localTree;
     private RemoteTree remoteTree;
     private CommonTree commonTree;
-    private LocalSSHServer localSSHServer;
     private TerminalPanel localTerminalPanel = new TerminalPanel();
     private TerminalPanel remoteTerminalPanel = new TerminalPanel();
     private AnnotationConfigApplicationContext context;
@@ -143,12 +141,9 @@ public class JFTClient extends Application {
 
         tabTerminal.selectedProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue) {
-                if (localSSHServer.isRunning()) {
-                    return;
-                }
                 try {
                     localTerminal.connect();
-                } catch (JSchException | IOException e) {
+                } catch (IOException e) {
                     logger.warn("failed to open local terminal", e);
                 }
             }
@@ -185,7 +180,6 @@ public class JFTClient extends Application {
         localTree = context.getBean(LocalTree.class);
         remoteTree = context.getBean(RemoteTree.class);
         commonTree = context.getBean(CommonTree.class);
-        localSSHServer = context.getBean(LocalSSHServer.class);
         remoteTerminal = context.getBean(RemoteTerminal.class);
         localTerminal = context.getBean(LocalTerminal.class);
         localTerminal.setLocalTerminalPanel(localTerminalPanel);

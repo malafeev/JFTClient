@@ -1,72 +1,61 @@
 package org.jftclient.terminal;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.HashMap;
+import java.util.Map;
 
-import org.jftclient.sshd.LocalSSHServer;
-import org.springframework.beans.factory.annotation.Autowired;
+import javax.annotation.PreDestroy;
+
 import org.springframework.stereotype.Component;
 
-import com.jcraft.jsch.ChannelShell;
-import com.jcraft.jsch.JSch;
-import com.jcraft.jsch.JSchException;
-import com.jcraft.jsch.Session;
+import com.pty4j.PtyProcess;
 
 /**
  * @author sergei.malafeev
  */
 @Component
 public class LocalTerminal {
-    @Autowired
-    private LocalSSHServer localSSHServer;
-    private Session session;
-    private Thread thread1;
-    private Thread thread2;
+    private Thread thread;
     private TerminalPanel localTerminalPanel;
+    private PtyProcess pty;
 
-    public void connect() throws JSchException, IOException {
+    public void connect() throws IOException {
         if (localTerminalPanel == null) {
             throw new IllegalStateException("local terminal panel is not set");
         }
-        localSSHServer.start();
+        if (pty != null && pty.isAlive()) {
+            return;
+        }
 
-        JSch jsch = new JSch();
-        session = jsch.getSession("user", "localhost", localSSHServer.getPort());
-        session.setPassword("");
-        session.setConfig("StrictHostKeyChecking", "no");
-        session.connect(5000);
-        ChannelShell channel = (ChannelShell) session.openChannel("shell");
-        channel.setPtyType("vt102");
-        channel.setEnv("TERM_PROGRAM", ""); // for OS X
+        String[] cmd = {"/bin/sh", "-l", "-i"};
+        Map<String, String> envs = new HashMap<>(System.getenv());
+        envs.remove("TERM_PROGRAM"); // for OS X
+        envs.put("TERM", "xterm-256color");
 
-        OutputStream inputToChannel = channel.getOutputStream();
-        PrintStream printStream = new PrintStream(inputToChannel, true);
+        pty = PtyProcess.exec(cmd, envs, System.getProperty("user.home"));
 
+        OutputStream os = pty.getOutputStream();
+        InputStream is = pty.getInputStream();
+
+        PrintStream printStream = new PrintStream(os, true);
         localTerminalPanel.setPrintStream(printStream);
 
-        ReentrantLock lock = new ReentrantLock();
-        Runnable run = new TerminalWatcher(channel.getExtInputStream(), lock, localTerminalPanel.getTextArea());
-        thread1 = new Thread(run);
-        thread1.start();
+        Runnable run = new TerminalWatcher(is, localTerminalPanel.getTextArea());
+        thread = new Thread(run);
+        thread.start();
 
-        Runnable run2 = new TerminalWatcher(channel.getInputStream(), lock, localTerminalPanel.getTextArea());
-        thread2 = new Thread(run2);
-        thread2.start();
-
-        channel.connect();
     }
 
+    @PreDestroy
     public void disconnect() {
-        if (session != null) {
-            session.disconnect();
+        if (pty != null) {
+            pty.destroy();
         }
-        if (thread1 != null) {
-            thread1.interrupt();
-        }
-        if (thread2 != null) {
-            thread2.interrupt();
+        if (thread != null) {
+            thread.interrupt();
         }
     }
 

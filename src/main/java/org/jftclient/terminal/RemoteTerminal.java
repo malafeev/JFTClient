@@ -48,7 +48,7 @@ public class RemoteTerminal {
 
         InputStream outFromChannel = channel.getInputStream();
 
-        Runnable run = new TerminalWatcher(outFromChannel, null, remoteTerminalPanel.getTextArea());
+        Runnable run = new TerminalWatcher(outFromChannel, remoteTerminalPanel.getTextArea());
         thread = new Thread(run);
         thread.start();
 

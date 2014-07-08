@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.InterruptedIOException;
-import java.util.concurrent.locks.ReentrantLock;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,12 +17,10 @@ import javafx.scene.control.TextArea;
 public class TerminalWatcher implements Runnable {
     private static final Logger logger = LoggerFactory.getLogger(TerminalWatcher.class);
     private InputStream outFromChannel;
-    private ReentrantLock lock;
     private TextArea textArea;
 
-    public TerminalWatcher(InputStream outFromChannel, ReentrantLock lock, TextArea textArea) {
+    public TerminalWatcher(InputStream outFromChannel, TextArea textArea) {
         this.outFromChannel = outFromChannel;
-        this.lock = lock;
         this.textArea = textArea;
     }
 
@@ -34,10 +31,6 @@ public class TerminalWatcher implements Runnable {
             int read;
             while ((read = isr.read(buff)) != -1) {
                 String s = new String(buff, 0, read);
-
-                if (lock != null) {
-                    lock.lock();
-                }
 
                 boolean backspace = false;
                 if (s.contains("\b\u001B[K")) {
@@ -54,18 +47,11 @@ public class TerminalWatcher implements Runnable {
                     Platform.runLater(textArea::deletePreviousChar);
                 }
 
-                if (lock != null) {
-                    lock.unlock();
-                }
             }
         } catch (InterruptedIOException e) {
             //ignore
         } catch (IOException e) {
             logger.warn("failed to read from ssh", e);
-        } finally {
-            if (lock != null && lock.isHeldByCurrentThread()) {
-                lock.unlock();
-            }
         }
     }
 
