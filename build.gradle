@@ -24,6 +24,9 @@ repositories {
     flatDir {
         dirs 'lib'
     }
+    maven {
+        url 'http://www.sparetimelabs.com/maven2'
+    }
 }
 
 configurations {
@@ -32,10 +35,10 @@ configurations {
 
 dependencies {
     compile name: 'pty4j-0.3'
-    compile name: 'jna'
-    compile name: 'jna-utils'
-    compile name: 'purejavacomm'
 
+    compile 'com.sparetimelabs:purejavacomm:0.0.21'
+    compile 'net.java.dev.jna:jna:4.1.0'
+    compile 'net.java.dev.jna:jna-platform:4.1.0'
 
     compile 'commons-io:commons-io:2.4'
 
