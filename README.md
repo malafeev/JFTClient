@@ -32,10 +32,9 @@ In the directory that contains build.gradle run
 
      gradle install
      
-It will build, test and install application to *~/jftclient* folder.
+It will build, test and install application to `~/jftclient` folder.
  
-
-### To run
+### Run
 
 If it was installed then start JFTClient: 
 
@@ -44,6 +43,10 @@ If it was installed then start JFTClient:
 Otherwise in the directory that contains build.gradle run:
  
     gradle run 
+
+## Implementation Details
+
+JFTClient uses embedded H2 database. Data file is saved in `~/.jftclient/` folder.
 
 ## License 
 GNU GPLv3.
