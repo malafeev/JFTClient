@@ -45,6 +45,22 @@ public class CommonTree {
     private ExecutorService executorService = Executors.newCachedThreadPool();
     private OutputPanel outputPanel = OutputPanel.getInstance();
 
+    public void expand(TreeView<Node> treeView) {
+        List<TreeItem<Node>> items = new ArrayList<>(treeView.getSelectionModel().getSelectedItems());
+        if (items.isEmpty() || items.size() > 1) {
+            return;
+        }
+
+        TreeItem<Node> item = items.get(0);
+        if (item.isExpanded()) {
+            item.setExpanded(false);
+        } else {
+            treeView.getSelectionModel().clearSelection();
+            item.setExpanded(true);
+            treeView.getSelectionModel().select(item);
+        }
+    }
+
     public void refresh(TreeView<Node> treeView, Tree tree) {
         List<TreeItem<Node>> items = new ArrayList<>(treeView.getSelectionModel().getSelectedItems());
         if (items.isEmpty() || items.size() > 1) {

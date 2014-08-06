@@ -21,9 +21,7 @@ public class HostCell extends ListCell<String> {
         this.hostField = hostField;
 
         MenuItem deleteMenu = new MenuItem("Delete");
-        deleteMenu.setOnAction(event -> {
-            deleteItems();
-        });
+        deleteMenu.setOnAction(event -> deleteItems());
 
         contextMenu = new ContextMenu();
         contextMenu.getItems().addAll(deleteMenu);

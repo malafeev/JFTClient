@@ -302,6 +302,8 @@ public class JFTClient extends Application {
                 commonTree.deleteSelectedItems(treeView, localTree);
             } else if (event.getCode() == KeyCode.F5) {
                 commonTree.refresh(treeView, localTree);
+            } else if (event.getCode() == KeyCode.ENTER) {
+                commonTree.expand(treeView);
             }
         });
 
@@ -363,6 +365,8 @@ public class JFTClient extends Application {
                 commonTree.deleteSelectedItems(treeView, remoteTree);
             } else if (event.getCode() == KeyCode.F5) {
                 commonTree.refresh(treeView, remoteTree);
+            } else if (event.getCode() == KeyCode.ENTER) {
+                commonTree.expand(treeView);
             }
         });
 
