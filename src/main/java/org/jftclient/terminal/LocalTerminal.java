@@ -33,7 +33,7 @@ public class LocalTerminal {
         String[] cmd = {"/bin/bash", "-i"};
         Map<String, String> envs = new HashMap<>(System.getenv());
         envs.remove("TERM_PROGRAM"); // for OS X
-        envs.put("TERM", "xterm-256color");
+        envs.put("TERM", "vt102");
 
         pty = PtyProcess.exec(cmd, envs, System.getProperty("user.home"));
 

@@ -7,6 +7,7 @@ import java.io.InterruptedIOException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.StringUtils;
 
 import javafx.application.Platform;
 import javafx.scene.control.TextArea;
@@ -37,11 +38,26 @@ public class TerminalWatcher implements Runnable {
                     backspace = true;
                 }
 
+                boolean middleErase = false;
+                int numBacks = 0;
+                if (s.contains("\u001B[P")) {
+                    middleErase = true;
+                    numBacks = StringUtils.countOccurrencesOf(s, "\b") - 1;
+                }
+
                 String res = removeEscapes(s);
 
                 if (!res.isEmpty()) {
+                    final boolean finalMiddleErase = middleErase;
+                    final int finalNumBacks = numBacks;
                     Platform.runLater(() -> {
-                        textArea.appendText(res);
+                        if (finalMiddleErase) {
+                            textArea.deleteText(textArea.getCaretPosition() - 1, textArea.getLength());
+                            textArea.insertText(textArea.getCaretPosition(), res);
+                            textArea.positionCaret(textArea.getCaretPosition() - finalNumBacks);
+                        } else {
+                            textArea.appendText(res);
+                        }
                     });
                 } else if (backspace) {
                     Platform.runLater(textArea::deletePreviousChar);

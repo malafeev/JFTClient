@@ -30,7 +30,10 @@ public class TerminalUtils {
             return keyMap.get(37);
         } else if (event.getCode() == KeyCode.RIGHT) {
             return keyMap.get(39);
-        }
+        } /*else if (event.getCode() == KeyCode.DELETE) {
+            //terminalPanel.getTextArea().positionCaret(terminalPanel.getTextArea().getCaretPosition() + 1);
+            return keyMap.get(8);
+        }*/
         return null;
     }
 
