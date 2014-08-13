@@ -45,6 +45,12 @@ public class TerminalWatcher implements Runnable {
                     numBacks = StringUtils.countOccurrencesOf(s, "\b") - 1;
                 }
 
+                if (s.equals("\b")) {
+                    moveCursorLeft();
+                } else if (s.equals("\u001B[C")) {
+                    moveCursorRight();
+                }
+
                 String res = removeEscapes(s);
 
                 if (!res.isEmpty()) {
@@ -60,9 +66,10 @@ public class TerminalWatcher implements Runnable {
                         }
                     });
                 } else if (backspace) {
-                    Platform.runLater(textArea::deletePreviousChar);
+                    Platform.runLater(() -> {
+                        textArea.deleteText(textArea.getCaretPosition() - 1, textArea.getLength());
+                    });
                 }
-
             }
         } catch (InterruptedIOException e) {
             //ignore
@@ -88,5 +95,18 @@ public class TerminalWatcher implements Runnable {
 
         return target;
     }
+
+    private void moveCursorRight() {
+        Platform.runLater(() -> {
+            textArea.positionCaret(textArea.getCaretPosition() + 1);
+        });
+    }
+
+    private void moveCursorLeft() {
+        Platform.runLater(() -> {
+            textArea.positionCaret(textArea.getCaretPosition() - 1);
+        });
+    }
+
 }
 

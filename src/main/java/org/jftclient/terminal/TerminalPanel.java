@@ -8,7 +8,6 @@ import org.slf4j.LoggerFactory;
 
 import javafx.event.Event;
 import javafx.scene.control.TextArea;
-import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.text.Font;
 
@@ -44,11 +43,6 @@ public class TerminalPanel {
                         printStream.print(event.getText());
                     }
 
-                    if (event.getCode() == KeyCode.LEFT) {
-                        return;
-                    } else if (event.getCode() == KeyCode.RIGHT) {
-                        return;
-                    }
                     event.consume();
                 }
         );
