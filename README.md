@@ -13,18 +13,29 @@ JavaFX based ssh client.
 
 ![Alt text](/screenshots/screenshot.png?raw=true)
 
-## Building from Source
 
-### Prerequisites
+## Prerequisites
 
 - JDK 8
-- Gradle 
 - rsync & sshpass
+- Gradle (only needed if building from source)
 
-### Supported OS
+## Supported OS
 
 - Linux
 - OS X
+
+## To Run
+
+Download jftclient-XX.zip
+
+https://github.com/malafeev/JFTClient/releases
+
+Start JFTClient
+
+     ./bin/jftclient
+
+## Building from Source
 
 ### Installation
 
