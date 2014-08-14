@@ -4,10 +4,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.InterruptedIOException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
+
+import com.google.common.base.Strings;
 
 import javafx.application.Platform;
 import javafx.scene.control.TextArea;
@@ -33,22 +37,28 @@ public class TerminalWatcher implements Runnable {
             while ((read = isr.read(buff)) != -1) {
                 String s = new String(buff, 0, read);
 
-                boolean backspace = false;
-                if (s.contains("\b\u001B[K")) {
-                    backspace = true;
+                Pattern pattern = Pattern.compile("^(\b+)(.*)");
+                Matcher mathcher = pattern.matcher(s);
+                if (mathcher.find()) {
+                    String firstBacks = mathcher.group(1);
+                    s = mathcher.group(2);
+                    moveCursorLeft(firstBacks.length(), !Strings.isNullOrEmpty(s));
+                }
+
+                boolean eraseLine = false;
+                if (s.contains("\u001B[K")) {
+                    eraseLine = true;
                 }
 
                 boolean middleErase = false;
                 int numBacks = 0;
                 if (s.contains("\u001B[P")) {
                     middleErase = true;
-                    numBacks = StringUtils.countOccurrencesOf(s, "\b") - 1;
+                    numBacks = StringUtils.countOccurrencesOf(s, "\b");
                 }
 
-                if (s.equals("\b")) {
-                    moveCursorLeft();
-                } else if (s.equals("\u001B[C")) {
-                    moveCursorRight();
+                if (s.equals("\u001B[C")) {
+                    moveCursorRight(1);
                 }
 
                 String res = removeEscapes(s);
@@ -58,16 +68,15 @@ public class TerminalWatcher implements Runnable {
                     final int finalNumBacks = numBacks;
                     Platform.runLater(() -> {
                         if (finalMiddleErase) {
-                            textArea.deleteText(textArea.getCaretPosition() - 1, textArea.getLength());
                             textArea.insertText(textArea.getCaretPosition(), res);
                             textArea.positionCaret(textArea.getCaretPosition() - finalNumBacks);
                         } else {
                             textArea.appendText(res);
                         }
                     });
-                } else if (backspace) {
+                } else if (eraseLine) {
                     Platform.runLater(() -> {
-                        textArea.deleteText(textArea.getCaretPosition() - 1, textArea.getLength());
+                        textArea.deleteText(textArea.getCaretPosition(), textArea.getLength());
                     });
                 }
             }
@@ -96,17 +105,17 @@ public class TerminalWatcher implements Runnable {
         return target;
     }
 
-    private void moveCursorRight() {
-        Platform.runLater(() -> {
-            textArea.positionCaret(textArea.getCaretPosition() + 1);
-        });
+    private void moveCursorRight(int count) {
+        Platform.runLater(() -> textArea.positionCaret(textArea.getCaretPosition() + count));
     }
 
-    private void moveCursorLeft() {
+    private void moveCursorLeft(int count, boolean delete) {
         Platform.runLater(() -> {
-            textArea.positionCaret(textArea.getCaretPosition() - 1);
+            textArea.positionCaret(textArea.getCaretPosition() - count);
+            if (delete) {
+                textArea.deleteText(textArea.getCaretPosition(), textArea.getLength());
+            }
         });
     }
-
 }
 

@@ -26,6 +26,8 @@ public class TerminalUtils {
             return keyMap.get(27);
         } else if (event.getCode() == KeyCode.UP) {
             return keyMap.get(38);
+        } else if (event.getCode() == KeyCode.DOWN) {
+            return keyMap.get(40);
         } else if (event.getCode() == KeyCode.LEFT) {
             return keyMap.get(37);
         } else if (event.getCode() == KeyCode.RIGHT) {
