@@ -111,14 +111,7 @@ public class NodeTreeCell extends TreeCell<Node> {
 
         btnCancel.setOnAction(event1 -> dialog.close());
 
-        String os = System.getProperty("os.name").toLowerCase();
-        if (os.contains("mac")) {
-            //TODO: strange hack on OS X
-            dialog.show();
-            dialog.toFront();
-        } else {
-            dialog.showAndWait();
-        }
+        dialog.showAndWait();
     }
 
     private void createNewFolderDialog(Stage primaryStage) {
@@ -166,14 +159,7 @@ public class NodeTreeCell extends TreeCell<Node> {
 
         btnCancel.setOnAction(event1 -> dialog.close());
 
-        String os = System.getProperty("os.name").toLowerCase();
-        if (os.contains("mac")) {
-            //TODO: strange hack on OS X
-            dialog.show();
-            dialog.toFront();
-        } else {
-            dialog.showAndWait();
-        }
+        dialog.showAndWait();
     }
 
     private void renameItem(String newName, Stage dialog) {

@@ -272,14 +272,7 @@ public class JFTClient extends Application {
         dialog.setX(x);
         dialog.setY(y);
 
-        String os = System.getProperty("os.name").toLowerCase();
-        if (os.contains("mac")) {
-            //TODO: strange hack on OS X
-            dialog.show();
-            dialog.toFront();
-        } else {
-            dialog.showAndWait();
-        }
+        dialog.showAndWait();
     }
 
     private TreeView<Node> createLocalTree() {
