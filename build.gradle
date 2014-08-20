@@ -7,7 +7,7 @@ ext {
 
 applicationName = applicationName.toLowerCase()
 archivesBaseName = applicationName
-version = "0.1"
+version = "0.2"
 mainClassName = "org.jftclient.JFTClient"
 
 jar {
@@ -50,12 +50,12 @@ dependencies {
 
     compile 'com.google.guava:guava:17.0'
 
-    compile 'org.springframework:spring-context:4.0.5.RELEASE'
-    compile 'org.springframework:spring-orm:4.0.5.RELEASE'
-    compile 'org.springframework.data:spring-data-jpa:1.6.0.RELEASE'
+    compile 'org.springframework:spring-context:4.0.6.RELEASE'
+    compile 'org.springframework:spring-orm:4.0.6.RELEASE'
+    compile 'org.springframework.data:spring-data-jpa:1.6.2.RELEASE'
 
-    compile 'org.hibernate:hibernate-entitymanager:4.3.5.Final'
-    compile 'com.h2database:h2:1.4.178'
+    compile 'org.hibernate:hibernate-entitymanager:4.3.6.Final'
+    compile 'com.h2database:h2:1.4.181'
 
     //Test:
     testCompile 'org.testng:testng:6.8.8'

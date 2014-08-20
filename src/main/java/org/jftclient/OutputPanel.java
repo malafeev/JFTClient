@@ -40,12 +40,14 @@ public class OutputPanel {
 
     private void print(Text... text) {
         textFlow.getChildren().addAll(text);
+        textFlow.autosize(); // Required after update 20
         scrollPane.setVvalue(1.0);
     }
 
     public void println(Text... text) {
         textFlow.getChildren().addAll(text);
         textFlow.getChildren().add(new Text("\n"));
+        textFlow.autosize(); // Required after update 20
         scrollPane.setVvalue(1.0);
     }
 

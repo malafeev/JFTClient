@@ -228,7 +228,7 @@ public class Connection {
             sftpChannel = (ChannelSftp) channel;
 
         } catch (JSchException e) {
-            logger.error("failed to connect to {}", remoteHost, e);
+            logger.debug("failed to connect to {}", remoteHost, e);
             return new ConnectionState(e, "failed to connect to " + remoteHost);
         }
         return new ConnectionState();
