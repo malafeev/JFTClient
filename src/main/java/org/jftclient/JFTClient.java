@@ -439,7 +439,7 @@ public class JFTClient extends Application {
         );
     }
 
-    public void createTrayIcon(final Stage stage) {
+    private void createTrayIcon(final Stage stage) {
         if (isMac() && SystemTray.isSupported()) {
             Platform.setImplicitExit(false);
 
