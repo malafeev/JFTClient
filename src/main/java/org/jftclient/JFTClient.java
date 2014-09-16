@@ -386,7 +386,7 @@ public class JFTClient extends Application {
         userField.setText(System.getProperty("user.name"));
 
         hostField.setEditable(true);
-        hostField.setPrefWidth(200d);
+        hostField.setPrefWidth(220d);
 
         hostField.getItems().addAll(hostDao.getHostNames());
 
