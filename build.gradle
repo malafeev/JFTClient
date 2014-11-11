@@ -34,8 +34,6 @@ configurations {
 }
 
 dependencies {
-    compile 'org.controlsfx:controlsfx:8.20.8'
-
     compile name: 'pty4j-0.3'
 
     compile 'com.sparetimelabs:purejavacomm:0.0.22'

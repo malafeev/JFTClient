@@ -13,7 +13,6 @@ import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 
-import org.controlsfx.dialog.Dialogs;
 import org.jftclient.config.dao.ConfigDao;
 import org.jftclient.config.dao.HostDao;
 import org.jftclient.config.domain.Config;
@@ -40,6 +39,7 @@ import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.geometry.Orientation;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckMenuItem;
 import javafx.scene.control.ComboBox;
@@ -246,12 +246,15 @@ public class JFTClient extends Application {
                 config.setSystemTray(newValue);
                 configDao.save(config);
 
-                Dialogs.create()
-                        .owner(primaryStage)
-                        .title("Information Dialog")
-                        .masthead(null)
-                        .message("Please restart application")
-                        .showInformation();
+                Alert dlg = new Alert(Alert.AlertType.INFORMATION);
+                dlg.setTitle("Information");
+                dlg.getDialogPane().setContentText("Please restart application");
+
+                dlg.initModality(Modality.APPLICATION_MODAL);
+                dlg.initOwner(primaryStage);
+                dlg.showAndWait();
+
+
             });
 
             menuSettings.getItems().addAll(cmSystemTray);
