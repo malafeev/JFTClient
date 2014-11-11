@@ -246,15 +246,13 @@ public class JFTClient extends Application {
                 config.setSystemTray(newValue);
                 configDao.save(config);
 
-                Alert dlg = new Alert(Alert.AlertType.INFORMATION);
-                dlg.setTitle("Information");
-                dlg.getDialogPane().setContentText("Please restart application");
+                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                alert.setTitle("Information");
+                alert.getDialogPane().setContentText("Please restart application");
 
-                dlg.initModality(Modality.APPLICATION_MODAL);
-                dlg.initOwner(primaryStage);
-                dlg.showAndWait();
-
-
+                alert.initModality(Modality.APPLICATION_MODAL);
+                alert.initOwner(primaryStage);
+                alert.showAndWait();
             });
 
             menuSettings.getItems().addAll(cmSystemTray);
