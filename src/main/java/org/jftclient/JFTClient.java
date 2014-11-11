@@ -10,7 +10,10 @@ import java.awt.event.MouseAdapter;
 import java.io.IOException;
 
 import javax.swing.JFrame;
+import javax.swing.SwingUtilities;
+import javax.swing.WindowConstants;
 
+import org.controlsfx.dialog.Dialogs;
 import org.jftclient.config.dao.ConfigDao;
 import org.jftclient.config.dao.HostDao;
 import org.jftclient.config.domain.Config;
@@ -234,6 +237,26 @@ public class JFTClient extends Application {
 
         menuSettings.getItems().addAll(cmSavePasswords);
 
+        if (isMac()) {
+            CheckMenuItem cmSystemTray = new CheckMenuItem("Keep in System Tray");
+            cmSystemTray.setSelected(configDao.get().isSystemTray());
+
+            cmSystemTray.selectedProperty().addListener((observable, oldValue, newValue) -> {
+                Config config = configDao.get();
+                config.setSystemTray(newValue);
+                configDao.save(config);
+
+                Dialogs.create()
+                        .owner(primaryStage)
+                        .title("Information Dialog")
+                        .masthead(null)
+                        .message("Please restart application")
+                        .showInformation();
+            });
+
+            menuSettings.getItems().addAll(cmSystemTray);
+        }
+
         menuBar.getMenus().addAll(menuEdit, menuView, menuSettings);
         return menuBar;
     }
@@ -440,47 +463,49 @@ public class JFTClient extends Application {
     }
 
     private void createTrayIcon(final Stage stage) {
-        if (isMac() && SystemTray.isSupported()) {
-            Platform.setImplicitExit(false);
+        if (SystemTray.isSupported() && configDao.get().isSystemTray()) {
 
-            SystemTray tray = SystemTray.getSystemTray();
-            java.awt.Image image = Toolkit.getDefaultToolkit().getImage(JFTClient.class.getResource("/java.png"));
+            SwingUtilities.invokeLater(() -> {
+                SystemTray tray = SystemTray.getSystemTray();
+                java.awt.Image image = Toolkit.getDefaultToolkit().getImage(JFTClient.class.getResource("/java.png"));
 
-            stage.setOnCloseRequest(t -> Platform.runLater(stage::hide));
+                stage.setOnCloseRequest(t -> Platform.runLater(stage::hide));
 
-            ActionListener closeListener = e -> System.exit(0);
-            ActionListener showListener = e -> Platform.runLater(stage::show);
+                ActionListener closeListener = e -> System.exit(0);
+                ActionListener showListener = e -> Platform.runLater(stage::show);
 
-            PopupMenu popup = new PopupMenu();
+                PopupMenu popup = new PopupMenu();
 
-            java.awt.MenuItem showItem = new java.awt.MenuItem("Show");
-            showItem.addActionListener(showListener);
-            popup.add(showItem);
+                java.awt.MenuItem showItem = new java.awt.MenuItem("Show");
+                showItem.addActionListener(showListener);
+                popup.add(showItem);
 
-            java.awt.MenuItem closeItem = new java.awt.MenuItem("Exit");
-            closeItem.addActionListener(closeListener);
-            popup.add(closeItem);
+                java.awt.MenuItem closeItem = new java.awt.MenuItem("Exit");
+                closeItem.addActionListener(closeListener);
+                popup.add(closeItem);
 
-            TrayIcon trayIcon = new TrayIcon(image, "JFTClient", popup);
+                TrayIcon trayIcon = new TrayIcon(image, "JFTClient", popup);
 
-            JFrame frame = new JFrame("");
-            frame.setUndecorated(true);
-            frame.add(popup);
-            frame.setResizable(false);
-            frame.setVisible(true);
+                JFrame frame = new JFrame("");
+                frame.setUndecorated(true);
+                frame.add(popup);
+                frame.setResizable(false);
+                frame.setVisible(true);
+                frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
-            trayIcon.addMouseListener(new MouseAdapter() {
-                @Override
-                public void mouseClicked(java.awt.event.MouseEvent e) {
-                    Platform.runLater(() -> popup.show(frame, e.getXOnScreen(), e.getYOnScreen()));
+                trayIcon.addMouseListener(new MouseAdapter() {
+                    @Override
+                    public void mouseClicked(java.awt.event.MouseEvent e) {
+                        Platform.runLater(() -> popup.show(frame, e.getXOnScreen(), e.getYOnScreen()));
+                    }
+                });
+                try {
+                    tray.add(trayIcon);
+                    Platform.setImplicitExit(false);
+                } catch (AWTException e) {
+                    logger.error("failed to add tray icon", e);
                 }
             });
-
-            try {
-                tray.add(trayIcon);
-            } catch (AWTException e) {
-                logger.error("failed to add tray icon", e);
-            }
         }
     }
 
