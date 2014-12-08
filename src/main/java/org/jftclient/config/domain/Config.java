@@ -1,6 +1,5 @@
 package org.jftclient.config.domain;
 
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 
@@ -13,8 +12,7 @@ public class Config {
     private long id = 1L;
     private boolean showHiddenFiles;
     private boolean savePasswords;
-    @Column(name = "useSystemTray", columnDefinition = "boolean default false", nullable = false)
-    private boolean systemTray = false;
+    private boolean systemTray;
 
     public long getId() {
         return id;

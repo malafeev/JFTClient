@@ -47,22 +47,33 @@ public class NodeTreeCell extends TreeCell<Node> {
         this.tree = tree;
         this.commonTree = commonTree;
 
-        MenuItem refreshMenu = new MenuItem("Refresh");
-        refreshMenu.setOnAction((ActionEvent event) -> refreshItem());
-        refreshMenu.setAccelerator(new KeyCodeCombination(KeyCode.F5));
+        MenuItem refreshMenuFile = new MenuItem("Refresh");
+        refreshMenuFile.setOnAction((ActionEvent event) -> refreshItem());
+        refreshMenuFile.setAccelerator(new KeyCodeCombination(KeyCode.F5));
 
-        MenuItem deleteMenu = new MenuItem("Delete");
-        deleteMenu.setOnAction((ActionEvent event) -> deleteItems());
-        deleteMenu.setAccelerator(new KeyCodeCombination(KeyCode.DELETE));
+        MenuItem refreshMenuFolder = new MenuItem("Refresh");
+        refreshMenuFolder.setOnAction((ActionEvent event) -> refreshItem());
+        refreshMenuFolder.setAccelerator(new KeyCodeCombination(KeyCode.F5));
+
+        MenuItem deleteMenuFile = new MenuItem("Delete");
+        deleteMenuFile.setOnAction((ActionEvent event) -> deleteItems());
+        deleteMenuFile.setAccelerator(new KeyCodeCombination(KeyCode.DELETE));
+
+        MenuItem deleteMenuFolder = new MenuItem("Delete");
+        deleteMenuFolder.setOnAction((ActionEvent event) -> deleteItems());
+        deleteMenuFolder.setAccelerator(new KeyCodeCombination(KeyCode.DELETE));
 
         MenuItem newFolderMenu = new MenuItem("New Folder");
         newFolderMenu.setOnAction((ActionEvent event) -> createNewFolderDialog(primaryStage));
 
-        MenuItem renameMenu = new MenuItem("Rename");
-        renameMenu.setOnAction((ActionEvent event) -> createRenameDialog(primaryStage));
+        MenuItem renameMenuFile = new MenuItem("Rename");
+        renameMenuFile.setOnAction((ActionEvent event) -> createRenameDialog(primaryStage));
 
-        contextFolderMenu.getItems().addAll(newFolderMenu, refreshMenu, deleteMenu, renameMenu);
-        contextFileMenu.getItems().addAll(refreshMenu, deleteMenu, renameMenu);
+        MenuItem renameMenuFolder = new MenuItem("Rename");
+        renameMenuFolder.setOnAction((ActionEvent event) -> createRenameDialog(primaryStage));
+
+        contextFolderMenu.getItems().addAll(newFolderMenu, refreshMenuFolder, deleteMenuFolder, renameMenuFolder);
+        contextFileMenu.getItems().addAll(refreshMenuFile, deleteMenuFile, renameMenuFile);
     }
 
     private void createRenameDialog(Stage primaryStage) {
