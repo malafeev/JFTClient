@@ -12,7 +12,6 @@ public class Config {
     private long id = 1L;
     private boolean showHiddenFiles;
     private boolean savePasswords;
-    private boolean systemTray;
 
     public long getId() {
         return id;
@@ -36,13 +35,5 @@ public class Config {
 
     public void setSavePasswords(boolean savePasswords) {
         this.savePasswords = savePasswords;
-    }
-
-    public boolean isSystemTray() {
-        return systemTray;
-    }
-
-    public void setSystemTray(boolean systemTray) {
-        this.systemTray = systemTray;
     }
 }

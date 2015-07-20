@@ -1,17 +1,7 @@
 package org.jftclient;
 
 import java.awt.AWTException;
-import java.awt.PopupMenu;
-import java.awt.SystemTray;
-import java.awt.Toolkit;
-import java.awt.TrayIcon;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
 import java.io.IOException;
-
-import javax.swing.JFrame;
-import javax.swing.SwingUtilities;
-import javax.swing.WindowConstants;
 
 import org.jftclient.config.dao.ConfigDao;
 import org.jftclient.config.dao.HostDao;
@@ -35,11 +25,9 @@ import com.google.common.base.Strings;
 import com.jcraft.jsch.JSchException;
 
 import javafx.application.Application;
-import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.geometry.Orientation;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckMenuItem;
 import javafx.scene.control.ComboBox;
@@ -171,7 +159,6 @@ public class JFTClient extends Application {
             }
         });
 
-        createTrayIcon(primaryStage);
         primaryStage.show();
     }
 
@@ -236,28 +223,6 @@ public class JFTClient extends Application {
         });
 
         menuSettings.getItems().addAll(cmSavePasswords);
-
-        if (isMac()) {
-            CheckMenuItem cmSystemTray = new CheckMenuItem("Keep in System Tray");
-            cmSystemTray.setSelected(configDao.get().isSystemTray());
-
-            cmSystemTray.selectedProperty().addListener((observable, oldValue, newValue) -> {
-                Config config = configDao.get();
-                config.setSystemTray(newValue);
-                configDao.save(config);
-
-                Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                alert.setTitle("Information");
-                alert.getDialogPane().setContentText("Please restart application");
-
-                alert.initModality(Modality.APPLICATION_MODAL);
-                alert.initOwner(primaryStage);
-                alert.showAndWait();
-            });
-
-            menuSettings.getItems().addAll(cmSystemTray);
-        }
-
         menuBar.getMenus().addAll(menuEdit, menuView, menuSettings);
         return menuBar;
     }
@@ -461,57 +426,6 @@ public class JFTClient extends Application {
                 button,
                 region
         );
-    }
-
-    private void createTrayIcon(final Stage stage) {
-        if (SystemTray.isSupported() && configDao.get().isSystemTray()) {
-
-            SwingUtilities.invokeLater(() -> {
-                SystemTray tray = SystemTray.getSystemTray();
-                java.awt.Image image = Toolkit.getDefaultToolkit().getImage(JFTClient.class.getResource("/java.png"));
-
-                stage.setOnCloseRequest(t -> Platform.runLater(stage::hide));
-
-                ActionListener closeListener = e -> System.exit(0);
-                ActionListener showListener = e -> Platform.runLater(stage::show);
-
-                PopupMenu popup = new PopupMenu();
-
-                java.awt.MenuItem showItem = new java.awt.MenuItem("Show");
-                showItem.addActionListener(showListener);
-                popup.add(showItem);
-
-                java.awt.MenuItem closeItem = new java.awt.MenuItem("Exit");
-                closeItem.addActionListener(closeListener);
-                popup.add(closeItem);
-
-                TrayIcon trayIcon = new TrayIcon(image, "JFTClient", popup);
-
-                JFrame frame = new JFrame("");
-                frame.setUndecorated(true);
-                frame.add(popup);
-                frame.setResizable(false);
-                frame.setVisible(true);
-                frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-
-                trayIcon.addMouseListener(new MouseAdapter() {
-                    @Override
-                    public void mouseClicked(java.awt.event.MouseEvent e) {
-                        Platform.runLater(() -> popup.show(frame, e.getXOnScreen(), e.getYOnScreen()));
-                    }
-                });
-                try {
-                    tray.add(trayIcon);
-                    Platform.setImplicitExit(false);
-                } catch (AWTException e) {
-                    logger.error("failed to add tray icon", e);
-                }
-            });
-        }
-    }
-
-    private boolean isMac() {
-        return System.getProperty("os.name").toLowerCase().contains("mac");
     }
 
     public static void main(String[] args) {

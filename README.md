@@ -16,7 +16,7 @@ JavaFX based ssh client.
 
 ## Prerequisites
 
-- JDK 8 (update 20 or later)
+- JDK 8 (update 51 or later)
 - rsync & sshpass
 - Gradle (only needed if building from source)
 
