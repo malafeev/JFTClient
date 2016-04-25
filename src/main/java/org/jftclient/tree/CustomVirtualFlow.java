@@ -12,7 +12,7 @@ public class CustomVirtualFlow<T extends IndexedCell> extends VirtualFlow<T> {
         if (position == 1.0d) {
             return 0.99999999999;
         }
-        return super.getPosition(); //To change body of generated methods, choose Tools | Templates.
+        return super.getPosition();
     }
 
     @Override
@@ -20,7 +20,6 @@ public class CustomVirtualFlow<T extends IndexedCell> extends VirtualFlow<T> {
         if (newPosition == 1.0d) {
             newPosition = 0.99999999999;
         }
-        super.setPosition(newPosition); //To change body of generated methods, choose Tools | Templates.
+        super.setPosition(newPosition);
     }
-
 }
