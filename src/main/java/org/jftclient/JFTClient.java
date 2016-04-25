@@ -1,7 +1,10 @@
 package org.jftclient;
 
-import java.awt.AWTException;
-import java.io.IOException;
+import com.google.common.base.Strings;
+
+import com.jcraft.jsch.JSchException;
+import com.sun.javafx.scene.control.skin.TreeViewSkin;
+import com.sun.javafx.scene.control.skin.VirtualFlow;
 
 import org.jftclient.config.dao.ConfigDao;
 import org.jftclient.config.dao.HostDao;
@@ -13,6 +16,7 @@ import org.jftclient.terminal.LocalTerminal;
 import org.jftclient.terminal.RemoteTerminal;
 import org.jftclient.terminal.TerminalPanel;
 import org.jftclient.tree.CommonTree;
+import org.jftclient.tree.CustomTreeViewSkin;
 import org.jftclient.tree.LocalTree;
 import org.jftclient.tree.Node;
 import org.jftclient.tree.NodeTreeCell;
@@ -21,8 +25,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
-import com.google.common.base.Strings;
-import com.jcraft.jsch.JSchException;
+import java.awt.*;
+import java.io.IOException;
 
 import javafx.application.Application;
 import javafx.collections.ObservableList;
@@ -31,6 +35,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckMenuItem;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.IndexedCell;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.Menu;
@@ -38,6 +43,7 @@ import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.SelectionMode;
+import javafx.scene.control.Skin;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
@@ -274,12 +280,20 @@ public class JFTClient extends Application {
         dialog.showAndWait();
     }
 
+    private TreeView<Node> createTree(TreeItem<Node> root) {
+        return new TreeView<Node>(root) {
+            @Override
+            protected Skin createDefaultSkin() {
+                return new CustomTreeViewSkin<>(this);
+            }
+        };
+    }
+
     private TreeView<Node> createLocalTree() {
 
         TreeItem<Node> root = localTree.createRootNode();
         root.setExpanded(true);
-        TreeView<Node> treeView = new TreeView<>(root);
-
+        TreeView<Node> treeView = createTree(root);
         treeView.setEditable(true);
         treeView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 
@@ -343,7 +357,9 @@ public class JFTClient extends Application {
 
         TreeItem<Node> root = remoteTree.createRootNote();
         root.setExpanded(true);
-        TreeView<Node> treeView = new TreeView<>(root);
+
+        TreeView<Node> treeView = createTree(root);
+
         treeView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 
         treeView.setCellFactory(param -> {
