@@ -61,4 +61,4 @@ JFTClient uses embedded H2 database. Data file is saved in `~/.jftclient/` folde
 
 ## License 
 GNU GPLv3.
-Copyright (C) 2014 Sergei Malafeev <sergeymalafeev@gmail.com>
+Copyright (C) 2016 Sergei Malafeev <sergeymalafeev@gmail.com>
